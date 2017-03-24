@@ -11,7 +11,7 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function (models) {
-        
+        Message.hasMany(models.MessageRecipient, { foreignKey: 'id' });
       }
     }
   }); 

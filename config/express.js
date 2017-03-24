@@ -4,7 +4,8 @@ var glob = require('glob');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var session = require('express-session');
+var cookieSession = require('cookie-session')
+// var session = require('express-session');
 var bodyParser = require('body-parser');
 var compress = require('compression');
 var methodOverride = require('method-override');
@@ -33,6 +34,12 @@ module.exports = function (app, config) {
   app.use(compress());
   app.use(express.static(config.root + '/public'));
   app.use(methodOverride());
+
+  app.use(cookieSession({
+  name: 'session',
+  keys: ["qeqw456789a"],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
   // app.use(session({
   //   secret: '123456',

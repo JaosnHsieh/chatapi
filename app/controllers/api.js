@@ -6,6 +6,26 @@ module.exports = function (app) {
   app.use('/api', router);
 };
 
+//login logout
+  router.post('/login', (req, res) => {
+    db.User.find({where:{username:req.body.username,password:req.body.password}})
+    .then((user)=>{
+      if(!user) res.sendStatus(404);
+      req.session.user = user;
+      res.sendStatus(200);
+    })
+    .error((error)=>{
+      res.sendStatus(500);
+    });
+  
+  });
+
+  router.post('/logout', (req, res) => {
+    delete req.session.user;
+    res.sendStatus(200);
+  });
+
+//login logout end
 
 //User
 
@@ -60,7 +80,7 @@ router.post('/group', function (req, res, next) {
 router.post('/userxgroup', function (req, res, next) {
 
   db.UserXgroup.build({
-      userId: req.body.userId,
+      userId: req.session.user.id,
       groupId: req.body.groupId,
       isActive: req.body.isActive
     }).save()
@@ -100,17 +120,32 @@ router.get('/message/group/:id', function (req, res, next) {
     
     //確認使用者在群組中
     db.UserXgroup
-    .findAll({where:{groupId:req.params.id,userId:1}})
-    .then((results)=>{
-      //使用者不在群組中 或 根本沒群組 就404
-      if(results.length==0){
-        res.sendStatus(404);
-      }
-      else{
+    .find({where:{groupId:req.params.id,userId:req.session.user.id}})
+    .then((result)=>{
+      //使用者不在群組中 
+      if(!result) res.sendStatus(404);
+      
+      //使用者在群組中 就找出 MessageRecipient inner join Message 然後 傳回訊息
+      db.MessageRecipient
+      .findAll({
+        include:[
+          {
+            model:db.Message,
+            required:true
+          }
+        ],
+        where:{
+          recipientGroupId:result.id
+        }
+      })
+      .then((results)=>{
+        res.json(results);
+      })
+      .error((error)=>{
+        res.sendStatus(500);
+      });
 
-        db.Message.findAll({where:{}})
-
-      }
+      
 
 
     })
