@@ -7,28 +7,33 @@ module.exports = function (app) {
 };
 
 //login logout
-  router.post('/login', (req, res) => {
-    db.ChatUser.find({where:{username:req.body.username,password:req.body.password}})
-    .then((user)=>{
-      if(!user) {
-        res.sendStatus(404);
-        return; 
+router.post('/login', (req, res) => {
+  db.ChatUser.find({
+      where: {
+        username: req.body.username,
+        password: req.body.password
       }
-      
+    })
+    .then((user) => {
+      if (!user) {
+        res.sendStatus(404);
+        return;
+      }
+
       req.session.user = user;
       res.sendStatus(200);
 
     })
-    .error((error)=>{
+    .error((error) => {
       res.sendStatus(500);
     });
-  
-  });
 
-  router.post('/logout', (req, res) => {
-    delete req.session.user;
-    res.sendStatus(200);
-  });
+});
+
+router.post('/logout', (req, res) => {
+  delete req.session.user;
+  res.sendStatus(200);
+});
 
 //login logout end
 
@@ -36,19 +41,34 @@ module.exports = function (app) {
 
 //建立使用者
 router.post('/user', (req, res, next) => {
-
-  db.ChatUser.build({
-      username: req.body.username,
-      password: req.body.password,
-      name: req.body.name,
-      isActive: req.body.isActive 
-    }).save()
-    .then((user) => {
-      console.log(user);
-      res.sendStatus(200);
+  db.ChatUser
+    .find({
+      where: {
+        username: req.body.username
+      }
     })
-    .error((error) => {
-      res.sendStatus(500);
+    .then((user) => {
+
+      //如果有已經有一樣的username就返回 409 conflict
+      if (user != null) {
+        res.sendStatus(409);
+        return;
+      }
+
+      db.ChatUser.build({
+          username: req.body.username,
+          password: req.body.password,
+          name: req.body.name,
+          isActive: req.body.isActive
+        }).save()
+        .then((user) => {
+          res.sendStatus(201);
+        })
+        .error((error) => {
+          res.sendStatus(500);
+        });
+
+
     });
 
 
@@ -84,17 +104,53 @@ router.post('/group', function (req, res, next) {
 //加入群組
 router.post('/userxgroup', function (req, res, next) {
 
-  db.ChatUserXgroup.build({
-      userId: req.session.user.id,
-      groupId: req.body.groupId,
-      isActive: req.body.isActive
-    }).save()
-    .then(() => {
-      res.sendStatus(200);
+  db.ChatGroup
+    .find({
+      where: {
+        idno: req.body.groupId
+      }
     })
-    .error((error) => {
-      res.sendStatus(500);
+    .then((chatGroup) => {
+      //如果群組不存在 就404 not found
+      if (chatGroup == null) {
+        res.sendStatus(404);
+        return;
+      };
+
+
+      db.ChatUserXgroup
+        .find({
+          where: {
+            userId: req.session.user.idno,
+            groupId: req.body.groupId
+          }
+        })
+        .then((userXGroup) => {
+
+          //如果有已經有一樣的userId和groupId就代表該使用者已經加入過群組 返回 409 conflict
+          if (userXGroup != null) {
+            res.sendStatus(409);
+            return;
+          }
+
+          //建立加入群組的紀錄 insert ChatUserXgroup
+          db.ChatUserXgroup.build({
+              userId: req.session.user.idno,
+              groupId: req.body.groupId,
+              isActive: req.body.isActive
+            }).save()
+            .then(() => {
+              res.sendStatus(200);
+            })
+            .error((error) => {
+              res.sendStatus(500);
+            });
+
+        });
+
     });
+
+
 
 
 });
@@ -118,45 +174,53 @@ router.get('/message/user/:id', function (req, res, next) {
 //取得群組內的訊息
 
 router.get('/message/group/:id', function (req, res, next) {
+  
 
-   if (!req.params.id) {
+  if (!req.params.id) {
     res.sendStatus(500);
-  }else{
-    
+  } else {
+
     //確認使用者在群組中
     db.ChatUserXgroup
-    .find({where:{groupId:req.params.id,userId:req.session.user.id}})
-    .then((result)=>{
-      //使用者不在群組中 
-      if(!result) res.sendStatus(404);
-      
-      //使用者在群組中 就找出 MessageRecipient inner join Message 然後 傳回訊息
-      db.ChatMessageRecipient
-      .findAll({
-        include:[
-          {
-            model:db.Message,
-            required:true
-          }
-        ],
-        where:{
-          recipientGroupId:result.id
+      .find({
+        where: {
+          groupId: req.params.id,
+          userId: req.session.user.idno
         }
       })
-      .then((results)=>{
-        res.json(results);
+      .then((chatUserXgroup) => {
+        
+        //使用者不在群組中 403 Forbidden
+        if (chatUserXgroup==null) {
+          res.sendStatus(403);
+          return;
+        }
+
+        //使用者在群組中 就找出 MessageRecipient inner join Message 然後 傳回訊息
+        db.ChatMessageRecipient
+          .findAll({
+            include: [{
+              model: db.ChatMessage,
+              required: true
+            }],
+            where: {
+              recipientGroupId: chatUserXgroup.idno
+            }
+          })
+          .then((chatMessageRecipients) => {
+            res.json(chatMessageRecipients);
+          })
+          .error((error) => {
+            res.sendStatus(500);
+          });
+
+
+
+
       })
-      .error((error)=>{
+      .error((error) => {
         res.sendStatus(500);
       });
-
-      
-
-
-    })
-    .error((error)=>{
-      res.sendStatus(500);
-    });
 
   }
 
@@ -175,7 +239,7 @@ router.post('/message/group/:id', function (req, res, next) {
     db.ChatMessage.build({
         subject: req.body.subject,
         messageBody: req.body.messageBody,
-        creatorId: req.body.creatorId,
+        creatorId: req.session.user.idno,
         parentMessageId: req.body.parentMessageId,
         expiryDate: null,
         isActive: req.body.isActive
@@ -183,21 +247,28 @@ router.post('/message/group/:id', function (req, res, next) {
       .save()
       .then((msg) => {
 
-        //找出群組內有幾個USER
+        //找出群組內有幾個USER及這些USER的idno
         db.ChatUserXgroup
           .findAll({
             where: {
               groupId: req.params.id
             }
           })
-          .then((results) => {
-            //建立訊息紀錄
+          .then((chatUserXGroups) => {
+            //如果群組內沒人
+            if(chatUserXGroups.length==0){
+              res.sendStatus(404);
+              return
+            }
+ 
+            //群組有人
+            //建立群組每個人的訊息紀錄
             let msgRecipients = [];
-            results.forEach((result) => {
+            chatUserXGroups.forEach((chatUserXGroup) => {
               msgRecipients.push({
                 recipientId: null,
-                recipientGroupId: result.id,
-                messageId: msg.id,
+                recipientGroupId: chatUserXGroup.idno,
+                messageId: msg.idno,
                 isRead: 0
               });
             });
@@ -220,7 +291,7 @@ router.post('/message/group/:id', function (req, res, next) {
       });
 
 
-    }
+  }
 
 });
 
@@ -234,7 +305,7 @@ router.post('/message/user/:id', function (req, res, next) {
     db.ChatMessage.build({
         subject: req.body.subject,
         messageBody: req.body.messageBody,
-        creatorId: req.body.creatorId,
+        creatorId: req.session.user.idno,
         parentMessageId: req.body.parentMessageId,
         expiryDate: null,
         isActive: req.body.isActive
