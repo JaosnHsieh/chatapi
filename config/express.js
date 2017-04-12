@@ -41,6 +41,18 @@ module.exports = function (app, config) {
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 
+  
+////CROS header
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || "*");
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,HEAD,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'content-Type,x-requested-with');
+
+  next();
+});
+////CROD header end
+
+
   // app.use(session({
   //   secret: '123456',
   //   name: 'cookie-name',
@@ -49,23 +61,23 @@ module.exports = function (app, config) {
   //   saveUninitialized: true
   // }));
 
-  // app.post('/login', (req, res) => {
-  //   req.session.login = true;
-  //   res.send('Logined');
-  // });
+  app.use('*', (req, res, next) => {
+    if(req.method=='POST'||req.method=='OPTIONS'){
+      if(req.baseUrl ==='/api/login'||req.baseUrl ==='/api/logout'||req.baseUrl ==='/api/user'){
+        
+        next();
+        return;
+      }
+    }
 
-  // app.post('/logout', (req, res) => {
-  //   req.session.login = false;
-  //   res.send('Loged out');
-  // });
+     if (req.session.user) {
+      next();
+    } else {
+      res.sendStatus(500);
+    }
 
-  // app.use('*', (req, res, next) => {
-  //   if (req.session.login) {
-  //     next();
-  //   } else {
-  //     res.send("not allowed");
-  //   }
-  // });
+   
+  });
 
 
 

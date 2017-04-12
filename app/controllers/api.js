@@ -10,9 +10,14 @@ module.exports = function (app) {
   router.post('/login', (req, res) => {
     db.User.find({where:{username:req.body.username,password:req.body.password}})
     .then((user)=>{
-      if(!user) res.sendStatus(404);
+      if(!user) {
+        res.sendStatus(404);
+        return; 
+      }
+      
       req.session.user = user;
       res.sendStatus(200);
+
     })
     .error((error)=>{
       res.sendStatus(500);
@@ -36,7 +41,7 @@ router.post('/user', (req, res, next) => {
       username: req.body.username,
       password: req.body.password,
       name: req.body.name,
-      isActive: req.body.isActive
+      isActive: req.body.isActive 
     }).save()
     .then((user) => {
       console.log(user);
