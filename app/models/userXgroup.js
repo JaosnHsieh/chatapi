@@ -1,10 +1,15 @@
 
 module.exports = function (sequelize, DataTypes) {
 
-  var UserXgroup = sequelize.define('UserXgroup', {
+  var ChatUserXgroup = sequelize.define('ChatUserXgroup', {
+     idno: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true 
+    },
     userId: DataTypes.INTEGER,
     groupId: DataTypes.INTEGER,
-    isActive:DataTypes.INTEGER
+    isActive:DataTypes.INTEGER 
   }, {
     classMethods: {
       associate: function (models) {
@@ -13,6 +18,6 @@ module.exports = function (sequelize, DataTypes) {
     }
   }); 
 
-  return UserXgroup;
+  return ChatUserXgroup;
 };
 

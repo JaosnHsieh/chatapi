@@ -1,17 +1,20 @@
-
 module.exports = function (sequelize, DataTypes) {
 
-  var Group = sequelize.define('Group', {
+  var ChatGroup = sequelize.define('ChatGroup', {
+    idno: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true 
+    },
     name: DataTypes.STRING,
-    isActive:DataTypes.INTEGER
+    isActive: DataTypes.INTEGER
   }, {
     classMethods: {
       associate: function (models) {
-        
+
       }
-    } 
-  }); 
+    }
+  });
 
-  return Group;
+  return ChatGroup;
 };
-

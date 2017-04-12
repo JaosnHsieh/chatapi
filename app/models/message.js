@@ -1,7 +1,12 @@
 
 module.exports = function (sequelize, DataTypes) {
 
-  var Message = sequelize.define('Message', {
+  var ChatMessage = sequelize.define('ChatMessage', {
+     idno: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true 
+    },
     subject: DataTypes.STRING,
     messageBody: DataTypes.STRING,
     creatorId: DataTypes.INTEGER,
@@ -11,11 +16,11 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function (models) {
-        Message.hasMany(models.MessageRecipient, { foreignKey: 'id' });
+        ChatMessage.hasMany(models.ChatMessageRecipient, { foreignKey: 'idno' });
       }
     }
   }); 
 
-  return Message;
+  return ChatMessage;
 };
 

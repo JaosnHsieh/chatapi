@@ -1,7 +1,12 @@
 
 module.exports = function (sequelize, DataTypes) {
 
-  var MessageRecipient = sequelize.define('MessageRecipient', {
+  var ChatMessageRecipient = sequelize.define('ChatMessageRecipient', {
+     idno: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true 
+    },
     recipientId: DataTypes.INTEGER,
     recipientGroupId: DataTypes.INTEGER,
     messageId: DataTypes.INTEGER,
@@ -9,11 +14,11 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function (models) { 
-        MessageRecipient.belongsTo(models.Message, { foreignKey: 'messageId' });
+        ChatMessageRecipient.belongsTo(models.ChatMessage, { foreignKey: 'messageId' });
       }
     }
   }); 
 
-  return MessageRecipient;
+  return ChatMessageRecipient;
 };
 

@@ -8,7 +8,7 @@ module.exports = function (app) {
 
 //login logout
   router.post('/login', (req, res) => {
-    db.User.find({where:{username:req.body.username,password:req.body.password}})
+    db.ChatUser.find({where:{username:req.body.username,password:req.body.password}})
     .then((user)=>{
       if(!user) {
         res.sendStatus(404);
@@ -37,7 +37,7 @@ module.exports = function (app) {
 //建立使用者
 router.post('/user', (req, res, next) => {
 
-  db.User.build({
+  db.ChatUser.build({
       username: req.body.username,
       password: req.body.password,
       name: req.body.name,
@@ -62,7 +62,7 @@ router.post('/user', (req, res, next) => {
 //建立聊天群組
 router.post('/group', function (req, res, next) {
 
-  db.Group.build({
+  db.ChatGroup.build({
       name: req.body.name,
       isActive: 1
     }).save()
@@ -84,7 +84,7 @@ router.post('/group', function (req, res, next) {
 //加入群組
 router.post('/userxgroup', function (req, res, next) {
 
-  db.UserXgroup.build({
+  db.ChatUserXgroup.build({
       userId: req.session.user.id,
       groupId: req.body.groupId,
       isActive: req.body.isActive
@@ -124,14 +124,14 @@ router.get('/message/group/:id', function (req, res, next) {
   }else{
     
     //確認使用者在群組中
-    db.UserXgroup
+    db.ChatUserXgroup
     .find({where:{groupId:req.params.id,userId:req.session.user.id}})
     .then((result)=>{
       //使用者不在群組中 
       if(!result) res.sendStatus(404);
       
       //使用者在群組中 就找出 MessageRecipient inner join Message 然後 傳回訊息
-      db.MessageRecipient
+      db.ChatMessageRecipient
       .findAll({
         include:[
           {
@@ -172,7 +172,7 @@ router.post('/message/group/:id', function (req, res, next) {
     res.sendStatus(500);
   } else {
     //建立訊息
-    db.Message.build({
+    db.ChatMessage.build({
         subject: req.body.subject,
         messageBody: req.body.messageBody,
         creatorId: req.body.creatorId,
@@ -184,7 +184,7 @@ router.post('/message/group/:id', function (req, res, next) {
       .then((msg) => {
 
         //找出群組內有幾個USER
-        db.UserXgroup
+        db.ChatUserXgroup
           .findAll({
             where: {
               groupId: req.params.id
@@ -202,7 +202,7 @@ router.post('/message/group/:id', function (req, res, next) {
               });
             });
             //儲存訊息紀錄
-            db.MessageRecipient.bulkCreate(msgRecipients)
+            db.ChatMessageRecipient.bulkCreate(msgRecipients)
               .then(function () {
                 res.sendStatus(201);
               })
@@ -231,7 +231,7 @@ router.post('/message/user/:id', function (req, res, next) {
     res.sendStatus(500);
   } else {
 
-    db.Message.build({
+    db.ChatMessage.build({
         subject: req.body.subject,
         messageBody: req.body.messageBody,
         creatorId: req.body.creatorId,
@@ -242,7 +242,7 @@ router.post('/message/user/:id', function (req, res, next) {
       .save()
       .then((msg) => {
 
-        db.MessageRecipient.build({
+        db.ChatMessageRecipient.build({
             recipientId: req.params.id,
             recipientGroupId: null,
             messageId: msg.id,
