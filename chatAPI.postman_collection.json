@@ -1,0 +1,193 @@
+{
+	"variables": [],
+	"info": {
+		"name": "chatAPI",
+		"_postman_id": "e3b42551-99e6-5bb2-c142-c84f9e032665",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "建立群組",
+			"request": {
+				"url": "http://localhost:3000/api/group",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\":\"room1\",\"isActive\":0}"
+				},
+				"description": "add group"
+			},
+			"response": []
+		},
+		{
+			"name": "加入群組",
+			"request": {
+				"url": "http://localhost:3000/api/UserXGroup",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"groupId\":1,\"isActive\":0}"
+				},
+				"description": "add users groups records"
+			},
+			"response": []
+		},
+		{
+			"name": "傳訊息至群組",
+			"request": {
+				"url": "http://localhost:3000/api/message/group/1",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"subject\":\"Hi title\",\"messageBody\":\"給群組的\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
+				},
+				"description": "send a message to group"
+			},
+			"response": []
+		},
+		{
+			"name": "傳訊息至使用者",
+			"request": {
+				"url": "http://localhost:3000/api/message/user/1",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"subject\":\"Hi title\",\"messageBody\":\"this is my meesage body\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
+				},
+				"description": "add a message to user"
+			},
+			"response": []
+		},
+		{
+			"name": "登入",
+			"request": {
+				"url": "http://localhost:3000/api/login",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "test3",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "password",
+							"value": "1234",
+							"type": "text",
+							"enabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "登出",
+			"request": {
+				"url": "http://localhost:3000/api/logout",
+				"method": "POST",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "建立使用者",
+			"request": {
+				"url": "http://localhost:3000/api/user",
+				"method": "POST",
+				"header": [
+					{
+						"key": "//EmployeeId",
+						"value": "20",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "//Name",
+						"value": "QQ",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "//ManagerId",
+						"value": "6",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\":\"test3\",\"password\":\"1234\",\"name\":\"jason\",\"isActive\":0}"
+				},
+				"description": "add user"
+			},
+			"response": []
+		},
+		{
+			"name": "取得群組內訊息",
+			"request": {
+				"url": "http://localhost:3000/api/message/group/1",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"groupId\":1,\"isActive\":0}"
+				},
+				"description": "add users groups records"
+			},
+			"response": []
+		}
+	]
+}
