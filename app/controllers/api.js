@@ -160,16 +160,34 @@ router.post('/userxgroup', function (req, res, next) {
 
 //Message
 
-//取得某個USER傳來的訊息
+//取得使用者收到的所有的訊息
 
-router.get('/message/user/:id', function (req, res, next) {
+router.get('/message/user', function (req, res, next) {
 
-
+   // 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
+        db.ChatMessageRecipient
+          .findAll({
+            include: [{
+              model: db.ChatMessage,
+              required: true
+            }],
+            where: {
+              recipientId: req.session.user.idno
+            }
+          })
+          .then((chatMessageRecipients) => {
+            res.json(chatMessageRecipients);
+          })
+          .error((error) => {
+            res.sendStatus(500);
+          });
 
 
 });
 
-//取得某個USER傳來的訊息 END
+////取得使用者收到的所有的訊息 END
+
+
 
 //取得群組內的訊息
 
@@ -196,7 +214,7 @@ router.get('/message/group/:id', function (req, res, next) {
           return;
         }
 
-        //使用者在群組中 就找出 MessageRecipient inner join Message 然後 傳回訊息
+        //使用者在群組中 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
         db.ChatMessageRecipient
           .findAll({
             include: [{
@@ -228,6 +246,49 @@ router.get('/message/group/:id', function (req, res, next) {
 });
 
 //取得群組內的訊息 END
+
+//傳送訊息至個人
+router.post('/message/user/:id', function (req, res, next) {
+
+  if (!req.params.id) {
+    res.sendStatus(500);
+  } else {
+
+    db.ChatMessage.build({
+        subject: req.body.subject,
+        messageBody: req.body.messageBody,
+        creatorId: req.session.user.idno,
+        parentMessageId: req.body.parentMessageId,
+        expiryDate: null,
+        isActive: req.body.isActive
+      })
+      .save()
+      .then((msg) => {
+
+        db.ChatMessageRecipient.build({
+            recipientId: req.params.id,
+            recipientGroupId: null,
+            messageId: msg.idno,
+            isRead: 0
+          })
+          .save()
+          .then(() => {
+            res.sendStatus(200);
+          })
+          .error((error) => {
+            res.sendStatus(500);
+          });
+
+      })
+      .error((error) => {
+        res.sendStatus(500);
+      });
+  }
+
+
+
+}); 
+//傳送訊息至個人 END
 
 //傳送訊息至群組
 router.post('/message/group/:id', function (req, res, next) {
@@ -295,47 +356,10 @@ router.post('/message/group/:id', function (req, res, next) {
 
 });
 
-//傳送訊息至個人
-router.post('/message/user/:id', function (req, res, next) {
-
-  if (!req.params.id) {
-    res.sendStatus(500);
-  } else {
-
-    db.ChatMessage.build({
-        subject: req.body.subject,
-        messageBody: req.body.messageBody,
-        creatorId: req.session.user.idno,
-        parentMessageId: req.body.parentMessageId,
-        expiryDate: null,
-        isActive: req.body.isActive
-      })
-      .save()
-      .then((msg) => {
-
-        db.ChatMessageRecipient.build({
-            recipientId: req.params.id,
-            recipientGroupId: null,
-            messageId: msg.id,
-            isRead: 0
-          })
-          .save()
-          .then(() => {
-            res.sendStatus(200);
-          })
-          .error((error) => {
-            res.sendStatus(500);
-          });
-
-      })
-      .error((error) => {
-        res.sendStatus(500);
-      });
-  }
+//傳送訊息至群組 END
 
 
-
-}); //Message End
+//Message End
 
 /*
 //messageRecipient

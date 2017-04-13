@@ -10,7 +10,7 @@
 		{
 			"name": "建立群組",
 			"request": {
-				"url": "http://localhost:3000/api/group",
+				"url": "{{url}}/api/group",
 				"method": "POST",
 				"header": [
 					{
@@ -30,7 +30,7 @@
 		{
 			"name": "加入群組",
 			"request": {
-				"url": "http://localhost:3000/api/UserXGroup",
+				"url": "{{url}}/api/UserXGroup",
 				"method": "POST",
 				"header": [
 					{
@@ -50,7 +50,7 @@
 		{
 			"name": "傳訊息至群組",
 			"request": {
-				"url": "http://localhost:3000/api/message/group/1",
+				"url": "{{url}}/api/message/group/1",
 				"method": "POST",
 				"header": [
 					{
@@ -70,7 +70,7 @@
 		{
 			"name": "傳訊息至使用者",
 			"request": {
-				"url": "http://localhost:3000/api/message/user/1",
+				"url": "{{url}}/api/message/user/2",
 				"method": "POST",
 				"header": [
 					{
@@ -81,7 +81,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"subject\":\"Hi title\",\"messageBody\":\"this is my meesage body\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
+					"raw": "{\"subject\":\"Hi title\",\"messageBody\":\"給2號的訊息喔\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
 				},
 				"description": "add a message to user"
 			},
@@ -90,7 +90,7 @@
 		{
 			"name": "登入",
 			"request": {
-				"url": "http://localhost:3000/api/login",
+				"url": "{{url}}/api/login",
 				"method": "POST",
 				"header": [
 					{
@@ -104,7 +104,7 @@
 					"urlencoded": [
 						{
 							"key": "username",
-							"value": "test3",
+							"value": "test2",
 							"type": "text",
 							"enabled": true
 						},
@@ -123,7 +123,7 @@
 		{
 			"name": "登出",
 			"request": {
-				"url": "http://localhost:3000/api/logout",
+				"url": "{{url}}/api/logout",
 				"method": "POST",
 				"header": [],
 				"body": {},
@@ -134,7 +134,7 @@
 		{
 			"name": "建立使用者",
 			"request": {
-				"url": "http://localhost:3000/api/user",
+				"url": "{{url}}/api/user",
 				"method": "POST",
 				"header": [
 					{
@@ -172,7 +172,27 @@
 		{
 			"name": "取得群組內訊息",
 			"request": {
-				"url": "http://localhost:3000/api/message/group/1",
+				"url": "{{url}}/api/message/group/1",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"groupId\":1,\"isActive\":0}"
+				},
+				"description": "add users groups records"
+			},
+			"response": []
+		},
+		{
+			"name": "取得個人訊息",
+			"request": {
+				"url": "{{url}}/api/message/user",
 				"method": "GET",
 				"header": [
 					{
