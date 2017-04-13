@@ -39,6 +39,40 @@ router.post('/logout', (req, res) => {
 
 //User
 
+//取得所有使用者清單
+router.get('/user', (req, res, next) => {
+  db.ChatUser
+    .findAll({attributes: ['idno', 'username','name']})
+    .then((chatUsers) => {
+        res.json(chatUsers);
+    })
+    .error((error)=>{
+        res.sendStatus(500);
+    });
+});
+//取得所有使用者清單 END
+
+//取得某group內的使用者清單
+router.get('/user/group/:id', (req, res, next) => {
+    //如果沒輸入group id 就 response 500
+    if (!req.params.id) {
+        res.sendStatus(500);
+        return;
+    } 
+    
+    //找group內的users 只回傳userId
+    db.ChatUserXgroup 
+    .findAll({attributes: ['userId'],where:{groupId:req.params.id}})
+    .then((chatUserXgroups) => {
+        res.json(chatUserXgroups);
+    })
+    .error((error)=>{
+        res.sendStatus(500);
+    });
+   
+});
+//取得某group內的使用者清單 END
+
 //建立使用者
 router.post('/user', (req, res, next) => {
   db.ChatUser
@@ -79,6 +113,22 @@ router.post('/user', (req, res, next) => {
 
 //Group
 
+//取得所有群組清單
+
+router.get('/group', function (req, res, next) {
+
+  db.ChatGroup.findAll()
+  .then((chatgroups)=>{
+    res.json(chatgroups);
+  })
+  .error((error)=>{
+    res.sendStatus(500);
+  });
+
+});
+
+//取得所有群組清單 END
+
 //建立聊天群組
 router.post('/group', function (req, res, next) {
 
@@ -87,7 +137,7 @@ router.post('/group', function (req, res, next) {
       isActive: 1
     }).save()
     .then(() => {
-      res.sendStatus(200);
+      res.sendStatus(201);
     })
     .error((error) => {
       res.sendStatus(500);
@@ -140,7 +190,7 @@ router.post('/userxgroup', function (req, res, next) {
               isActive: req.body.isActive
             }).save()
             .then(() => {
-              res.sendStatus(200);
+              res.sendStatus(201);
             })
             .error((error) => {
               res.sendStatus(500);
@@ -160,7 +210,7 @@ router.post('/userxgroup', function (req, res, next) {
 
 //Message
 
-//取得使用者收到的所有的訊息
+//取得使用者收到的所有訊息
 
 router.get('/message/user', function (req, res, next) {
 
@@ -185,7 +235,7 @@ router.get('/message/user', function (req, res, next) {
 
 });
 
-////取得使用者收到的所有的訊息 END
+////取得使用者收到的所有訊息 END
 
 
 
@@ -196,7 +246,9 @@ router.get('/message/group/:id', function (req, res, next) {
 
   if (!req.params.id) {
     res.sendStatus(500);
-  } else {
+    return;
+  } 
+
 
     //確認使用者在群組中
     db.ChatUserXgroup
@@ -240,8 +292,7 @@ router.get('/message/group/:id', function (req, res, next) {
         res.sendStatus(500);
       });
 
-  }
-
+  
 
 });
 
@@ -252,9 +303,19 @@ router.post('/message/user/:id', function (req, res, next) {
 
   if (!req.params.id) {
     res.sendStatus(500);
-  } else {
+    return;
+  } 
 
-    db.ChatMessage.build({
+  db.ChatUser
+  .find({where:{idno:req.params.id}})
+  .then((chatUser)=>{
+    //找不到使用者
+    if(chatUser==null){
+      res.sendStatus(404);
+      return;
+    }
+
+     db.ChatMessage.build({
         subject: req.body.subject,
         messageBody: req.body.messageBody,
         creatorId: req.session.user.idno,
@@ -273,7 +334,7 @@ router.post('/message/user/:id', function (req, res, next) {
           })
           .save()
           .then(() => {
-            res.sendStatus(200);
+            res.sendStatus(201);
           })
           .error((error) => {
             res.sendStatus(500);
@@ -283,7 +344,14 @@ router.post('/message/user/:id', function (req, res, next) {
       .error((error) => {
         res.sendStatus(500);
       });
-  }
+
+  })
+  .error((error)=>{
+      res.sendStatus(500);
+  });
+  
+   
+  
 
 
 

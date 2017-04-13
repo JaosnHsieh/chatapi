@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "chatAPI",
-		"_postman_id": "e3b42551-99e6-5bb2-c142-c84f9e032665",
+		"_postman_id": "53430ea4-4e6f-69e1-35d6-6a22933150d2",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -41,7 +41,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"groupId\":1,\"isActive\":0}"
+					"raw": "{\"groupId\":3,\"isActive\":0}"
 				},
 				"description": "add users groups records"
 			},
@@ -50,7 +50,7 @@
 		{
 			"name": "傳訊息至群組",
 			"request": {
-				"url": "{{url}}/api/message/group/1",
+				"url": "{{url}}/api/message/group/8",
 				"method": "POST",
 				"header": [
 					{
@@ -61,7 +61,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"subject\":\"Hi title\",\"messageBody\":\"給群組的\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
+					"raw": "{\"subject\":\"訊息主旨\",\"messageBody\":\"給群組的訊息內容\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
 				},
 				"description": "send a message to group"
 			},
@@ -70,7 +70,7 @@
 		{
 			"name": "傳訊息至使用者",
 			"request": {
-				"url": "{{url}}/api/message/user/2",
+				"url": "{{url}}/api/message/user/1",
 				"method": "POST",
 				"header": [
 					{
@@ -81,7 +81,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"subject\":\"Hi title\",\"messageBody\":\"給2號的訊息喔\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
+					"raw": "{\"subject\":\"訊息標題\",\"messageBody\":\"給2號的訊息內容喔\",\"parentMessageId\":0,\"expiryDate\":\"NULL\",\"isActive\":1}"
 				},
 				"description": "add a message to user"
 			},
@@ -104,7 +104,7 @@
 					"urlencoded": [
 						{
 							"key": "username",
-							"value": "test2",
+							"value": "test1",
 							"type": "text",
 							"enabled": true
 						},
@@ -126,7 +126,10 @@
 				"url": "{{url}}/api/logout",
 				"method": "POST",
 				"header": [],
-				"body": {},
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
 				"description": ""
 			},
 			"response": []
@@ -193,6 +196,246 @@
 			"name": "取得個人訊息",
 			"request": {
 				"url": "{{url}}/api/message/user",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"groupId\":1,\"isActive\":0}"
+				},
+				"description": "add users groups records"
+			},
+			"response": []
+		},
+		{
+			"name": "取得群組清單",
+			"request": {
+				"url": "{{url}}/api/group",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"groupId\":1,\"isActive\":0}"
+				},
+				"description": "add users groups records"
+			},
+			"response": [
+				{
+					"id": "8efbf4c9-17f6-4b77-9484-2caad175394d",
+					"name": "q",
+					"originalRequest": {
+						"url": "{{url}}/api/group",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"enabled": true,
+								"description": "The mime type of this content"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"groupId\":1,\"isActive\":0}"
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"_postman_previewtype": "text",
+					"header": [
+						{
+							"name": "Access-Control-Allow-Headers",
+							"key": "Access-Control-Allow-Headers",
+							"value": "content-Type,x-requested-with",
+							"description": "Used in response to a preflight request to indicate which HTTP headers can be used when making the actual request."
+						},
+						{
+							"name": "Access-Control-Allow-Methods",
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET,POST,PUT,HEAD,DELETE,OPTIONS",
+							"description": "Specifies the method or methods allowed when accessing the resource. This is used in response to a preflight request."
+						},
+						{
+							"name": "Access-Control-Allow-Origin",
+							"key": "Access-Control-Allow-Origin",
+							"value": "*",
+							"description": "Specifies a URI that may access the resource. For requests without credentials, the server may specify '*' as a wildcard, thereby allowing any origin to access the resource."
+						},
+						{
+							"name": "Connection",
+							"key": "Connection",
+							"value": "keep-alive",
+							"description": "Options that are desired for the connection"
+						},
+						{
+							"name": "Content-Length",
+							"key": "Content-Length",
+							"value": "469",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"name": "Content-Type",
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8",
+							"description": "The mime type of this content"
+						},
+						{
+							"name": "Date",
+							"key": "Date",
+							"value": "Thu, 13 Apr 2017 03:28:06 GMT",
+							"description": "The date and time that the message was sent"
+						},
+						{
+							"name": "ETag",
+							"key": "ETag",
+							"value": "W/\"1d5-cFXO/cKgqyUE96HL2QmSWitnwlk\"",
+							"description": "An identifier for a specific version of a resource, often a message digest"
+						},
+						{
+							"name": "Vary",
+							"key": "Vary",
+							"value": "Accept-Encoding",
+							"description": "Tells downstream proxies how to match future request headers to decide whether the cached response can be used rather than requesting a fresh one from the origin server."
+						},
+						{
+							"name": "X-Powered-By",
+							"key": "X-Powered-By",
+							"value": "Express",
+							"description": "Specifies the technology (ASP.NET, PHP, JBoss, e.g.) supporting the web application (version details are often in X-Runtime, X-Version, or X-AspNet-Version)"
+						}
+					],
+					"cookie": [],
+					"responseTime": 55,
+					"body": "[{\"idno\":1,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-12T09:10:11.000Z\",\"updatedAt\":\"2017-04-12T09:10:11.000Z\"},{\"idno\":2,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-13T00:37:26.000Z\",\"updatedAt\":\"2017-04-13T00:37:26.000Z\"},{\"idno\":3,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-13T03:10:20.000Z\",\"updatedAt\":\"2017-04-13T03:10:20.000Z\"},{\"idno\":4,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-13T03:11:45.000Z\",\"updatedAt\":\"2017-04-13T03:11:45.000Z\"}]"
+				}
+			]
+		},
+		{
+			"name": "取得使用者清單",
+			"request": {
+				"url": "{{url}}/api/user",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"groupId\":1,\"isActive\":0}"
+				},
+				"description": "add users groups records"
+			},
+			"response": [
+				{
+					"id": "f5e39f99-8cfd-4169-bd5d-c896957ba2fd",
+					"name": "q",
+					"originalRequest": {
+						"url": "{{url}}/api/group",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"enabled": true,
+								"description": "The mime type of this content"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"groupId\":1,\"isActive\":0}"
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"_postman_previewtype": "text",
+					"header": [
+						{
+							"name": "Access-Control-Allow-Headers",
+							"key": "Access-Control-Allow-Headers",
+							"value": "content-Type,x-requested-with",
+							"description": "Used in response to a preflight request to indicate which HTTP headers can be used when making the actual request."
+						},
+						{
+							"name": "Access-Control-Allow-Methods",
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET,POST,PUT,HEAD,DELETE,OPTIONS",
+							"description": "Specifies the method or methods allowed when accessing the resource. This is used in response to a preflight request."
+						},
+						{
+							"name": "Access-Control-Allow-Origin",
+							"key": "Access-Control-Allow-Origin",
+							"value": "*",
+							"description": "Specifies a URI that may access the resource. For requests without credentials, the server may specify '*' as a wildcard, thereby allowing any origin to access the resource."
+						},
+						{
+							"name": "Connection",
+							"key": "Connection",
+							"value": "keep-alive",
+							"description": "Options that are desired for the connection"
+						},
+						{
+							"name": "Content-Length",
+							"key": "Content-Length",
+							"value": "469",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"name": "Content-Type",
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8",
+							"description": "The mime type of this content"
+						},
+						{
+							"name": "Date",
+							"key": "Date",
+							"value": "Thu, 13 Apr 2017 03:28:06 GMT",
+							"description": "The date and time that the message was sent"
+						},
+						{
+							"name": "ETag",
+							"key": "ETag",
+							"value": "W/\"1d5-cFXO/cKgqyUE96HL2QmSWitnwlk\"",
+							"description": "An identifier for a specific version of a resource, often a message digest"
+						},
+						{
+							"name": "Vary",
+							"key": "Vary",
+							"value": "Accept-Encoding",
+							"description": "Tells downstream proxies how to match future request headers to decide whether the cached response can be used rather than requesting a fresh one from the origin server."
+						},
+						{
+							"name": "X-Powered-By",
+							"key": "X-Powered-By",
+							"value": "Express",
+							"description": "Specifies the technology (ASP.NET, PHP, JBoss, e.g.) supporting the web application (version details are often in X-Runtime, X-Version, or X-AspNet-Version)"
+						}
+					],
+					"cookie": [],
+					"responseTime": 55,
+					"body": "[{\"idno\":1,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-12T09:10:11.000Z\",\"updatedAt\":\"2017-04-12T09:10:11.000Z\"},{\"idno\":2,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-13T00:37:26.000Z\",\"updatedAt\":\"2017-04-13T00:37:26.000Z\"},{\"idno\":3,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-13T03:10:20.000Z\",\"updatedAt\":\"2017-04-13T03:10:20.000Z\"},{\"idno\":4,\"name\":\"room1\",\"isActive\":1,\"createdAt\":\"2017-04-13T03:11:45.000Z\",\"updatedAt\":\"2017-04-13T03:11:45.000Z\"}]"
+				}
+			]
+		},
+		{
+			"name": "取得某個群組內的使用者清單",
+			"request": {
+				"url": "{{url}}/api/user/group/1",
 				"method": "GET",
 				"header": [
 					{
