@@ -42,34 +42,41 @@ router.post('/logout', (req, res) => {
 //取得所有使用者清單
 router.get('/user', (req, res, next) => {
   db.ChatUser
-    .findAll({attributes: ['idno', 'username','name']})
-    .then((chatUsers) => {
-        res.json(chatUsers);
+    .findAll({
+      attributes: ['idno', 'username', 'name']
     })
-    .error((error)=>{
-        res.sendStatus(500);
+    .then((chatUsers) => {
+      res.json(chatUsers);
+    })
+    .error((error) => {
+      res.sendStatus(500);
     });
 });
 //取得所有使用者清單 END
 
 //取得某group內的使用者清單
 router.get('/user/group/:id', (req, res, next) => {
-    //如果沒輸入group id 就 response 500
-    if (!req.params.id) {
-        res.sendStatus(500);
-        return;
-    } 
-    
-    //找group內的users 只回傳userId
-    db.ChatUserXgroup 
-    .findAll({attributes: ['userId'],where:{groupId:req.params.id}})
-    .then((chatUserXgroups) => {
-        res.json(chatUserXgroups);
+  //如果沒輸入group id 就 response 500
+  if (!req.params.id) {
+    res.sendStatus(500);
+    return;
+  }
+
+  //找group內的users 只回傳userId
+  db.ChatUserXgroup
+    .findAll({
+      attributes: ['userId'],
+      where: {
+        groupId: req.params.id
+      }
     })
-    .error((error)=>{
-        res.sendStatus(500);
+    .then((chatUserXgroups) => {
+      res.json(chatUserXgroups);
+    })
+    .error((error) => {
+      res.sendStatus(500);
     });
-   
+
 });
 //取得某group內的使用者清單 END
 
@@ -118,12 +125,12 @@ router.post('/user', (req, res, next) => {
 router.get('/group', function (req, res, next) {
 
   db.ChatGroup.findAll()
-  .then((chatgroups)=>{
-    res.json(chatgroups);
-  })
-  .error((error)=>{
-    res.sendStatus(500);
-  });
+    .then((chatgroups) => {
+      res.json(chatgroups);
+    })
+    .error((error) => {
+      res.sendStatus(500);
+    });
 
 });
 
@@ -213,24 +220,42 @@ router.post('/userxgroup', function (req, res, next) {
 //取得使用者收到的所有訊息
 
 router.get('/message/user', function (req, res, next) {
+  
+  //加上時間before after 條件
+  var whereOption = {
+    recipientId: req.session.user.idno
+  };
+  if (req.query.after || req.query.before) {
+    whereOption.createdAt = {};
+    if (req.query.after) {
+      whereOption.createdAt["$gt"] = req.query.after; //$gt是 where CreatedAt >  ，要輸入的時間格式 2012-02-21T18:10:00
 
-   // 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
-        db.ChatMessageRecipient
-          .findAll({
-            include: [{
-              model: db.ChatMessage,
-              required: true
-            }],
-            where: {
-              recipientId: req.session.user.idno
-            }
-          })
-          .then((chatMessageRecipients) => {
-            res.json(chatMessageRecipients);
-          })
-          .error((error) => {
-            res.sendStatus(500);
-          });
+    }
+
+    if (req.query.before) {
+      console.log('entering before if')
+      whereOption.createdAt["$lte"] = req.query.before; //$lte是 where CreatedAt <= ，要輸入的時間格式 2012-02-21T18:10:00
+    }
+
+  }
+  //加上時間before after 條件 END
+ 
+  // 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
+  db.ChatMessageRecipient
+    .findAll({
+      include: [{
+        model: db.ChatMessage,
+        required: true
+      }],
+      where: whereOption
+    })
+    .then((chatMessageRecipients) => {
+      res.json(chatMessageRecipients);
+    })
+    .error((error) => {
+      console.log(error);
+      res.sendStatus(500);
+    });
 
 
 });
@@ -242,57 +267,74 @@ router.get('/message/user', function (req, res, next) {
 //取得群組內的訊息
 
 router.get('/message/group/:id', function (req, res, next) {
-  
+
 
   if (!req.params.id) {
     res.sendStatus(500);
     return;
-  } 
+  }
 
 
-    //確認使用者在群組中
-    db.ChatUserXgroup
-      .find({
-        where: {
-          groupId: req.params.id,
-          userId: req.session.user.idno
-        }
-      })
-      .then((chatUserXgroup) => {
-        
-        //使用者不在群組中 403 Forbidden
-        if (chatUserXgroup==null) {
-          res.sendStatus(403);
-          return;
-        }
+  //確認使用者在群組中
+  db.ChatUserXgroup
+    .find({
+      where: {
+        groupId: req.params.id,
+        userId: req.session.user.idno
+      }
+    })
+    .then((chatUserXgroup) => {
 
-        //使用者在群組中 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
-        db.ChatMessageRecipient
-          .findAll({
-            include: [{
-              model: db.ChatMessage,
-              required: true
-            }],
-            where: {
-              recipientGroupId: chatUserXgroup.idno
+      //使用者不在群組中 403 Forbidden
+      if (chatUserXgroup == null) {
+        res.sendStatus(403);
+        return;
+      }
+
+       //加上時間before after 條件
+          var whereOption = {
+            recipientGroupId: chatUserXgroup.idno
+          };
+          if (req.query.after || req.query.before) {
+            whereOption.createdAt = {};
+            if (req.query.after) {
+              whereOption.createdAt["$gt"] = req.query.after; //$gt是 where CreatedAt >  ，要輸入的時間格式 2012-02-21T18:10:00
+
             }
-          })
-          .then((chatMessageRecipients) => {
-            res.json(chatMessageRecipients);
-          })
-          .error((error) => {
-            res.sendStatus(500);
-          });
+
+            if (req.query.before) {
+              console.log('entering before if')
+              whereOption.createdAt["$lte"] = req.query.before; //$lte是 where CreatedAt <= ，要輸入的時間格式 2012-02-21T18:10:00
+            }
+
+          }
+        //加上時間before after 條件 END
+          
+      //使用者在群組中 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
+      db.ChatMessageRecipient
+        .findAll({
+          include: [{
+            model: db.ChatMessage,
+            required: true
+          }],
+          where: whereOption
+        })
+        .then((chatMessageRecipients) => {
+          res.json(chatMessageRecipients);
+        })
+        .error((error) => {
+          res.sendStatus(500);
+        });
 
 
 
 
-      })
-      .error((error) => {
-        res.sendStatus(500);
-      });
+    })
+    .error((error) => {
+      res.sendStatus(500);
+    });
 
-  
+
 
 });
 
@@ -304,58 +346,62 @@ router.post('/message/user/:id', function (req, res, next) {
   if (!req.params.id) {
     res.sendStatus(500);
     return;
-  } 
+  }
 
   db.ChatUser
-  .find({where:{idno:req.params.id}})
-  .then((chatUser)=>{
-    //找不到使用者
-    if(chatUser==null){
-      res.sendStatus(404);
-      return;
-    }
+    .find({
+      where: {
+        idno: req.params.id
+      }
+    })
+    .then((chatUser) => {
+      //找不到使用者
+      if (chatUser == null) {
+        res.sendStatus(404);
+        return;
+      }
 
-     db.ChatMessage.build({
-        subject: req.body.subject,
-        messageBody: req.body.messageBody,
-        creatorId: req.session.user.idno,
-        parentMessageId: req.body.parentMessageId,
-        expiryDate: null,
-        isActive: req.body.isActive
-      })
-      .save()
-      .then((msg) => {
+      db.ChatMessage.build({
+          subject: req.body.subject,
+          messageBody: req.body.messageBody,
+          creatorId: req.session.user.idno,
+          parentMessageId: req.body.parentMessageId,
+          expiryDate: null,
+          isActive: req.body.isActive
+        })
+        .save()
+        .then((msg) => {
 
-        db.ChatMessageRecipient.build({
-            recipientId: req.params.id,
-            recipientGroupId: null,
-            messageId: msg.idno,
-            isRead: 0
-          })
-          .save()
-          .then(() => {
-            res.sendStatus(201);
-          })
-          .error((error) => {
-            res.sendStatus(500);
-          });
+          db.ChatMessageRecipient.build({
+              recipientId: req.params.id,
+              recipientGroupId: null,
+              messageId: msg.idno,
+              isRead: 0
+            })
+            .save()
+            .then(() => {
+              res.sendStatus(201);
+            })
+            .error((error) => {
+              res.sendStatus(500);
+            });
 
-      })
-      .error((error) => {
-        res.sendStatus(500);
-      });
+        })
+        .error((error) => {
+          res.sendStatus(500);
+        });
 
-  })
-  .error((error)=>{
+    })
+    .error((error) => {
       res.sendStatus(500);
-  });
-  
-   
-  
+    });
 
 
 
-}); 
+
+
+
+});
 //傳送訊息至個人 END
 
 //傳送訊息至群組
@@ -385,11 +431,11 @@ router.post('/message/group/:id', function (req, res, next) {
           })
           .then((chatUserXGroups) => {
             //如果群組內沒人
-            if(chatUserXGroups.length==0){
+            if (chatUserXGroups.length == 0) {
               res.sendStatus(404);
               return
             }
- 
+
             //群組有人
             //建立群組每個人的訊息紀錄
             let msgRecipients = [];
