@@ -1,8 +1,8 @@
 {
 	"variables": [],
 	"info": {
-		"name": "chatAPI",
-		"_postman_id": "53430ea4-4e6f-69e1-35d6-6a22933150d2",
+		"name": "chatAPI copy",
+		"_postman_id": "2976ee81-ad9e-f7a7-9ea9-3ab630f279c9",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -166,7 +166,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"username\":\"test3\",\"password\":\"1234\",\"name\":\"jason\",\"isActive\":0}"
+					"raw": "{\"username\":\"test1\",\"password\":\"1234\",\"name\":\"jason\",\"isActive\":0}"
 				},
 				"description": "add user"
 			},
@@ -175,7 +175,7 @@
 		{
 			"name": "取得群組內訊息",
 			"request": {
-				"url": "{{url}}/api/message/group/1",
+				"url": "{{url}}/api/message/group/1?before=2018-02-21T18:10:00&after=2016-02-21T18:10:00",
 				"method": "GET",
 				"header": [
 					{
@@ -195,7 +195,7 @@
 		{
 			"name": "取得個人訊息",
 			"request": {
-				"url": "{{url}}/api/message/user",
+				"url": "{{url}}/api/message/user?before=2018-02-21T18:10:00&after=2016-02-21T18:10:00",
 				"method": "GET",
 				"header": [
 					{
@@ -232,7 +232,7 @@
 			},
 			"response": [
 				{
-					"id": "8efbf4c9-17f6-4b77-9484-2caad175394d",
+					"id": "29466c55-1d75-4884-95c8-06e8a039557d",
 					"name": "q",
 					"originalRequest": {
 						"url": "{{url}}/api/group",
@@ -241,14 +241,14 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json",
-								"enabled": true,
-								"description": "The mime type of this content"
+								"description": ""
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\"groupId\":1,\"isActive\":0}"
-						}
+						},
+						"description": ""
 					},
 					"status": "OK",
 					"code": 200,
@@ -342,7 +342,7 @@
 			},
 			"response": [
 				{
-					"id": "f5e39f99-8cfd-4169-bd5d-c896957ba2fd",
+					"id": "68faedff-a804-4ef5-98f6-50b855cd150b",
 					"name": "q",
 					"originalRequest": {
 						"url": "{{url}}/api/group",
@@ -351,14 +351,14 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json",
-								"enabled": true,
-								"description": "The mime type of this content"
+								"description": ""
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\"groupId\":1,\"isActive\":0}"
-						}
+						},
+						"description": ""
 					},
 					"status": "OK",
 					"code": 200,
