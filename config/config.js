@@ -9,26 +9,42 @@ var config = {
       name: "chat-api"
     },
     port: process.env.PORT || 3000,
-    db: "mysql://localhost/chat-api-development"
-  },
+    db: {
+      database: "chat-api-develop",
+      username: "root",
+      password: "00000000",
+      options: {
+        host: 'localhost',
+        dialect: 'mysql',
 
-  test: {
-    root: rootPath,
-    app: {
-      name: "chat-api"
-    },
-    port: process.env.PORT || 3000,
-    db: "mysql://localhost/chat-api-test"
-  },
-
-  production: {
-    root: rootPath,
-    app: {
-      name: "chat-api"
-    },
-    port: process.env.PORT || 3000,
-    db: "mysql://localhost/chat-api-production"
+        pool: {
+          max: 5,
+          min: 0,
+          acquire: 30000,
+          idle: 10000
+        },
+        operatorsAliases: false
+      }
+    }
   }
+
+  // test: {
+  //   root: rootPath,
+  //   app: {
+  //     name: "chat-api"
+  //   },
+  //   port: process.env.PORT || 3000,
+  //   db: "mysql://localhost/chat-api-test"
+  // },
+
+  // production: {
+  //   root: rootPath,
+  //   app: {
+  //     name: "chat-api"
+  //   },
+  //   port: process.env.PORT || 3000,
+  //   db: "mysql://localhost/chat-api-production"
+  // }
 };
 
 module.exports = config[env];

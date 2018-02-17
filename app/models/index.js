@@ -1,36 +1,11 @@
 var fs = require("fs"),
   path = require("path"),
   Sequelize = require("sequelize"),
-  config = require("../../config/config"),
+  dbConfig = require("../../config/config").db,
   moment = require("moment");
 db = {};
-
-// var sequelize = new Sequelize(config.db);
-
-var sequelize = new Sequelize("ChatAPI", "sa", "`1qa~!QA", {
-  host: "192.168.11.24",
-  //// sequelize 的 log 選項 ， 目前是 print console和寫入 根目錄/log/db-query.log 檔案
-  logging: function(msg) {
-    console.log(msg);
-    fs.appendFile(
-      path.join(global.appRoot, "log", "db-query.log"),
-      moment().toString() + " : " + msg + "\n",
-      function(err) {
-        if (err) throw err;
-      }
-    );
-  },
-
-  dialectOptions: {
-    instanceName: "MSSQLSERVER"
-  },
-  dialect: "mssql",
-  pool: {
-    max: 5,
-    min: 0,
-    idle: 10000
-  }
-});
+let { database, username, password, options } = dbConfig;
+var sequelize = new Sequelize(database, username, password, options);
 
 fs
   .readdirSync(__dirname)
