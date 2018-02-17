@@ -11,7 +11,7 @@ var compress = require("compression");
 var methodOverride = require("method-override");
 var exphbs = require("express-handlebars");
 
-module.exports = function(app, config) {
+module.exports = function(app, config, io) {
   var env = process.env.NODE_ENV || "development";
   app.locals.ENV = env;
   app.locals.ENV_DEVELOPMENT = env == "development";
@@ -60,13 +60,16 @@ module.exports = function(app, config) {
   app.use(express.static(config.root + "/public"));
   app.use(methodOverride());
 
-  app.use(
-    cookieSession({
-      name: "session",
-      keys: ["qeqw456789a"],
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    })
-  );
+  var cookieSessionMiddleware = cookieSession({
+    name: "session",
+    keys: ["qeqw456789a"],
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  });
+  io.use(function(socket, next) {
+    console.log("io.use....");
+    cookieSessionMiddleware(socket.request, socket.request.res, next);
+  });
+  app.use(cookieSessionMiddleware);
 
   ////CROS header
   app.use(function(req, res, next) {
