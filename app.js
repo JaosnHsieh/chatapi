@@ -1,23 +1,23 @@
-var path = require('path');
+var path = require("path");
 global.appRoot = path.resolve(__dirname);
 
-var express = require('express'),
-  config = require('./config/config'),
-  db = require('./app/models');
+var express = require("express.io"),
+  config = require("./config/config"),
+  db = require("./app/models");
 
 var app = express();
 
-module.exports = require('./config/express')(app, config);
+module.exports = require("./config/express")(app, config);
 
 db.sequelize
   .sync()
-  .then(function () {
+  .then(function() {
     if (!module.parent) {
-      app.listen(config.port, function () {
-        console.log('Express server listening on port ' + config.port);
+      app.listen(config.port, function() {
+        console.log("Express server listening on port " + config.port);
       });
     }
-  }).catch(function (e) {
+  })
+  .catch(function(e) {
     throw new Error(e);
   });
-

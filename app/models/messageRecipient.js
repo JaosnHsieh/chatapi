@@ -1,24 +1,27 @@
-
-module.exports = function (sequelize, DataTypes) {
-
-  var ChatMessageRecipient = sequelize.define('ChatMessageRecipient', {
-     idno: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true 
+module.exports = function(sequelize, DataTypes) {
+  var ChatMessageRecipient = sequelize.define(
+    "ChatMessageRecipient",
+    {
+      idno: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      recipientId: DataTypes.INTEGER,
+      recipientGroupId: DataTypes.INTEGER,
+      messageId: DataTypes.INTEGER,
+      isRead: DataTypes.INTEGER
     },
-    recipientId: DataTypes.INTEGER,
-    recipientGroupId: DataTypes.INTEGER,
-    messageId: DataTypes.INTEGER,
-    isRead:DataTypes.INTEGER
-  }, {
-    classMethods: {
-      associate: function (models) { 
-        ChatMessageRecipient.belongsTo(models.ChatMessage, { foreignKey: 'messageId' });
+    {
+      classMethods: {
+        associate: function(models) {
+          ChatMessageRecipient.belongsTo(models.ChatMessage, {
+            foreignKey: "messageId"
+          });
+        }
       }
     }
-  }); 
+  );
 
   return ChatMessageRecipient;
 };
-

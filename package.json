@@ -8,7 +8,8 @@
     "test": "NODE_ENV=test mocha --recursive test",
     "test:coverage": "nyc npm test",
     "test:unit": "mocha --recursive test/middleware test/models test/routes",
-    "test:integration": "mocha --recursive test/integration"
+    "test:integration": "mocha --recursive test/integration",
+    "prettier": "prettier --write './**/*.{ts,js,css,json}'"
   },
   "dependencies": {
     "body-parser": "^1.13.3",
@@ -18,6 +19,7 @@
     "express": "^4.13.3",
     "express-handlebars": "^3.0.0",
     "express-session": "^1.15.1",
+    "express.io": "^1.1.13",
     "file-stream-rotator": "^0.1.0",
     "glob": "^6.0.4",
     "method-override": "^2.3.0",
@@ -32,13 +34,14 @@
     "chai": "^3.5.0",
     "debug": "^2.2.0",
     "grunt": "^1.0.1",
-    "grunt-develop": "^0.4.0",
     "grunt-contrib-watch": "^1.0.0",
-    "request": "^2.60.0",
-    "time-grunt": "^1.2.1",
+    "grunt-develop": "^0.4.0",
     "load-grunt-tasks": "^3.2.0",
     "mocha": "^3.0.2",
     "nyc": "^10.0.0",
-    "supertest": "^2.0.0"
+    "prettier": "^1.10.2",
+    "request": "^2.60.0",
+    "supertest": "^2.0.0",
+    "time-grunt": "^1.2.1"
   }
 }
