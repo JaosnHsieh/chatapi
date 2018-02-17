@@ -1,7 +1,7 @@
 var path = require("path");
 global.appRoot = path.resolve(__dirname);
 
-var express = require("express.io"),
+var express = require("express"),
   config = require("./config/config"),
   db = require("./app/models");
 
