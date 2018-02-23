@@ -93,7 +93,11 @@ module.exports = function(app, config, io) {
   // }));
 
   app.use("*", (req, res, next) => {
-    if (req.baseUrl === "/api/login" || req.baseUrl === "/api/logout") {
+    if (
+      req.baseUrl === "/api/login" ||
+      req.baseUrl === "/api/logout" ||
+      req.baseUrl === "/api/user"
+    ) {
       return next();
     }
     if (req.session.user) {

@@ -91,7 +91,7 @@ router.post("/user", (req, res, next) => {
     }
   }).then(user => {
     //如果有已經有一樣的username就返回 409 conflict
-    if (user != null) {
+    if (user !== null) {
       res.sendStatus(409);
       return;
     }
@@ -104,6 +104,7 @@ router.post("/user", (req, res, next) => {
     })
       .save()
       .then(user => {
+        req.session.user = user;
         res.sendStatus(201);
       })
       .error(error => {
