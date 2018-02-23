@@ -1,35 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
 </head>
+
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
-    <script>
-        var socket = io("localhost:3000");
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+
+  <form action="/api/login" method="POST">
+    <input type="text" name="username">
+    <input type="text" name="password">
+    <input type="submit">
+  </form>
 
 
-        var data = "username=test1&password=1234";
+  <button id="connect">connect websocket</button>
+  <button id="send">send</button>
 
-var xhr = new XMLHttpRequest();
-xhr.withCredentials = true;
 
-xhr.addEventListener("readystatechange", function () {
-  if (this.readyState === 4) {
-    console.log(this.responseText);
-  }
-});
 
-xhr.open("POST", "http://localhost:3000/api/login");
-xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
-xhr.setRequestHeader("cache-control", "no-cache");
-xhr.setRequestHeader("postman-token", "1ce3101d-15ad-9df5-44cb-aeb47a713564");
+  <input type="text" id="msg">
+  <button id="sendTo">Send To</button>
+  <input type="text" id="userId">
+  <script>
+    var button = document.getElementById('connect');
 
-xhr.send(data);
+    button.onclick = function () {
+      var socket = io("localhost:3000");
+      socket.on('connect', () => {
+        console.log('connected!!');
+      });
+      socket.on('disconnect', () => {
+        console.log('on disconnect');
+      });
 
-    </script>
+      socket.on('message', (data) => {
+        console.log('on message data = ', data);
+      });
+
+      socket.on('my message', function (msg) {
+        console.log('my message', msg);
+      });
+      socket.on('connect_error', (error) => {
+        console.error('connected error event fired', error);
+      });
+
+      var sendButton = document.getElementById('send');
+
+      sendButton.onclick = function () {
+        socket.send('hello world');
+      };
+
+      var sendToButton = document.getElementById('sendTo');
+
+      sendToButton.onclick = function () {
+        var userId = document.getElementById('userId').value;
+        var msg = document.getElementById('msg').value;
+        socket.emit('say to someone', userId, msg);
+      };
+
+    };
+
+
+
+
+
+
+    // var data = "username=jason1&password=1234";
+
+    // var xhr = new XMLHttpRequest();
+    // xhr.withCredentials = true;
+
+    // xhr.addEventListener("readystatechange", function () {
+    //   if (this.readyState === 4) {
+    //     console.log(this.responseText);
+    //   }
+    // });
+
+    // xhr.open("POST", "http://localhost:3000/api/login");
+    // xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
+
+    // xhr.send(data);
+
+  </script>
 </body>
+
 </html>

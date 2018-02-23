@@ -9,6 +9,8 @@ var app = express();
 
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
+var configSocketIo = require("./config/socketio.js");
+configSocketIo(io);
 
 module.exports = require("./config/express")(app, config, io);
 
@@ -24,14 +26,3 @@ db.sequelize
   .catch(function(e) {
     throw new Error(e);
   });
-
-io.on("connection", function(socket) {
-  console.log("a user connected");
-  socket.on("test", msg => {
-    console.log("msg", msg);
-    console.log("socket.request.session", socket.request.session);
-  });
-  socket.on("disconnect", function() {
-    console.log("user disconnected");
-  });
-});

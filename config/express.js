@@ -66,7 +66,6 @@ module.exports = function(app, config, io) {
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   });
   io.use(function(socket, next) {
-    console.log("io.use....");
     cookieSessionMiddleware(socket.request, socket.request.res, next);
   });
   app.use(cookieSessionMiddleware);
