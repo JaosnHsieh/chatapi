@@ -78,6 +78,7 @@ module.exports = function(app, config, io) {
       "GET,POST,PUT,HEAD,DELETE,OPTIONS"
     );
     res.header("Access-Control-Allow-Headers", "content-Type,x-requested-with");
+    res.header("Access-Control-Allow-Credentials", true);
 
     next();
   });
