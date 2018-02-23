@@ -35,9 +35,9 @@ router.post("/logout", (req, res) => {
 
 router.get("/login", (req, res) => {
   if (req.session && req.session.user) {
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } else {
-    res.sendStatus(404);
+    return res.sendStatus(404);
   }
 });
 

@@ -93,21 +93,14 @@ module.exports = function(app, config, io) {
   // }));
 
   app.use("*", (req, res, next) => {
-    if (req.method == "POST" || req.method == "OPTIONS") {
-      if (
-        req.baseUrl === "/api/login" ||
-        req.baseUrl === "/api/logout" ||
-        req.baseUrl === "/api/user"
-      ) {
-        next();
-        return;
-      }
+    if (req.baseUrl === "/api/login" || req.baseUrl === "/api/logout") {
+      return next();
     }
-
     if (req.session.user) {
       next();
     } else {
-      res.sendStatus(500);
+      console.error(`NOT ALLOWED REQUEST ${req.baseUrl} FROM ${req.ip}`);
+      return res.sendStatus(500);
     }
   });
 
