@@ -33,6 +33,14 @@ router.post("/logout", (req, res) => {
   res.sendStatus(200);
 });
 
+router.get("/login", (req, res) => {
+  if (req.session && req.session.user) {
+    res.sendStatus(200);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
 //login logout end
 
 //User
