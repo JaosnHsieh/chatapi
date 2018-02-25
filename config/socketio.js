@@ -56,6 +56,7 @@ module.exports = function(io) {
             return Promise.all([
               db.ChatMessageRecipient.build({
                 recipientId: idno,
+                senderId: fromUserId,
                 recipientGroupId: null,
                 messageId: msg.idno,
                 isRead: 0

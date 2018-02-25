@@ -16,15 +16,15 @@ router.post("/login", (req, res) => {
   })
     .then(user => {
       if (!user) {
-        res.sendStatus(404);
-        return;
+        return res.sendStatus(404);
       }
 
       req.session.user = user;
-      res.sendStatus(200);
+      return res.json(user);
     })
     .error(error => {
-      res.sendStatus(500);
+      console.error(error);
+      return res.sendStatus(404);
     });
 });
 
@@ -35,8 +35,9 @@ router.post("/logout", (req, res) => {
 
 router.get("/login", (req, res) => {
   if (req.session && req.session.user) {
-    return res.sendStatus(200);
+    return res.json(req.session.user);
   } else {
+    console.error(error);
     return res.sendStatus(404);
   }
 });
@@ -51,10 +52,10 @@ router.get("/user", (req, res, next) => {
     attributes: ["idno", "username", "name"]
   })
     .then(chatUsers => {
-      res.json(chatUsers);
+      return res.json(chatUsers);
     })
     .error(error => {
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 });
 //取得所有使用者清單 END
@@ -63,8 +64,7 @@ router.get("/user", (req, res, next) => {
 router.get("/user/group/:id", (req, res, next) => {
   //如果沒輸入group id 就 response 500
   if (!req.params.id) {
-    res.sendStatus(500);
-    return;
+    return res.sendStatus(500);
   }
 
   //找group內的users 只回傳userId
@@ -75,10 +75,10 @@ router.get("/user/group/:id", (req, res, next) => {
     }
   })
     .then(chatUserXgroups => {
-      res.json(chatUserXgroups);
+      return res.json(chatUserXgroups);
     })
     .error(error => {
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 });
 //取得某group內的使用者清單 END
@@ -92,8 +92,7 @@ router.post("/user", (req, res, next) => {
   }).then(user => {
     //如果有已經有一樣的username就返回 409 conflict
     if (user !== null) {
-      res.sendStatus(409);
-      return;
+      return res.sendStatus(409);
     }
 
     db.ChatUser.build({
@@ -105,10 +104,10 @@ router.post("/user", (req, res, next) => {
       .save()
       .then(user => {
         req.session.user = user;
-        res.sendStatus(201);
+        return res.sendStatus(201);
       })
       .error(error => {
-        res.sendStatus(500);
+        return res.sendStatus(500);
       });
   });
 });
@@ -122,10 +121,10 @@ router.post("/user", (req, res, next) => {
 router.get("/group", function(req, res, next) {
   db.ChatGroup.findAll()
     .then(chatgroups => {
-      res.json(chatgroups);
+      return res.json(chatgroups);
     })
     .error(error => {
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 });
 
@@ -139,10 +138,10 @@ router.post("/group", function(req, res, next) {
   })
     .save()
     .then(() => {
-      res.sendStatus(201);
+      return res.sendStatus(201);
     })
     .error(error => {
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 });
 
@@ -159,8 +158,7 @@ router.post("/userxgroup", function(req, res, next) {
   }).then(chatGroup => {
     //如果群組不存在 就404 not found
     if (chatGroup == null) {
-      res.sendStatus(404);
-      return;
+      return res.sendStatus(404);
     }
 
     db.ChatUserXgroup.find({
@@ -171,8 +169,7 @@ router.post("/userxgroup", function(req, res, next) {
     }).then(userXGroup => {
       //如果有已經有一樣的userId和groupId就代表該使用者已經加入過群組 返回 409 conflict
       if (userXGroup != null) {
-        res.sendStatus(409);
-        return;
+        return res.sendStatus(409);
       }
 
       //建立加入群組的紀錄 insert ChatUserXgroup
@@ -183,10 +180,10 @@ router.post("/userxgroup", function(req, res, next) {
       })
         .save()
         .then(() => {
-          res.sendStatus(201);
+          return res.sendStatus(201);
         })
         .error(error => {
-          res.sendStatus(500);
+          return res.sendStatus(500);
         });
     });
   });
@@ -201,7 +198,10 @@ router.post("/userxgroup", function(req, res, next) {
 router.get("/message/user", function(req, res, next) {
   //加上時間before after 條件
   var whereOption = {
-    recipientId: req.session.user.idno
+    $or: [
+      { recipientId: req.session.user.idno },
+      { senderId: req.session.user.idno }
+    ]
   };
   if (req.query.after || req.query.before) {
     whereOption.createdAt = {};
@@ -226,11 +226,11 @@ router.get("/message/user", function(req, res, next) {
     where: whereOption
   })
     .then(chatMessageRecipients => {
-      res.json(chatMessageRecipients);
+      return res.json(chatMessageRecipients);
     })
     .error(error => {
       console.log(error);
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 });
 
@@ -240,8 +240,7 @@ router.get("/message/user", function(req, res, next) {
 
 router.get("/message/group/:id", function(req, res, next) {
   if (!req.params.id) {
-    res.sendStatus(500);
-    return;
+    return res.sendStatus(500);
   }
 
   //確認使用者在群組中
@@ -254,8 +253,7 @@ router.get("/message/group/:id", function(req, res, next) {
     .then(chatUserXgroup => {
       //使用者不在群組中 403 Forbidden
       if (chatUserXgroup == null) {
-        res.sendStatus(403);
-        return;
+        return res.sendStatus(403);
       }
 
       //加上時間before after 條件
@@ -286,14 +284,14 @@ router.get("/message/group/:id", function(req, res, next) {
         where: whereOption
       })
         .then(chatMessageRecipients => {
-          res.json(chatMessageRecipients);
+          return res.json(chatMessageRecipients);
         })
         .error(error => {
-          res.sendStatus(500);
+          return res.sendStatus(500);
         });
     })
     .error(error => {
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 });
 
@@ -302,8 +300,7 @@ router.get("/message/group/:id", function(req, res, next) {
 //傳送訊息至個人
 router.post("/message/user/:id", function(req, res, next) {
   if (!req.params.id) {
-    res.sendStatus(500);
-    return;
+    return res.sendStatus(500);
   }
 
   db.ChatUser.find({
@@ -314,8 +311,7 @@ router.post("/message/user/:id", function(req, res, next) {
     .then(chatUser => {
       //找不到使用者
       if (chatUser == null) {
-        res.sendStatus(404);
-        return;
+        return res.sendStatus(404);
       }
 
       db.ChatMessage.build({
@@ -330,24 +326,25 @@ router.post("/message/user/:id", function(req, res, next) {
         .then(msg => {
           db.ChatMessageRecipient.build({
             recipientId: req.params.id,
+            senderId: req.session.user.idno,
             recipientGroupId: null,
             messageId: msg.idno,
             isRead: 0
           })
             .save()
             .then(() => {
-              res.sendStatus(201);
+              return res.sendStatus(201);
             })
             .error(error => {
-              res.sendStatus(500);
+              return res.sendStatus(500);
             });
         })
         .error(error => {
-          res.sendStatus(500);
+          return res.sendStatus(500);
         });
     })
     .error(error => {
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 });
 //傳送訊息至個人 END
@@ -355,7 +352,7 @@ router.post("/message/user/:id", function(req, res, next) {
 //傳送訊息至群組
 router.post("/message/group/:id", function(req, res, next) {
   if (!req.params.id) {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   } else {
     //建立訊息
     db.ChatMessage.build({
@@ -376,8 +373,7 @@ router.post("/message/group/:id", function(req, res, next) {
         }).then(chatUserXGroups => {
           //如果群組內沒人
           if (chatUserXGroups.length == 0) {
-            res.sendStatus(404);
-            return;
+            return res.sendStatus(404);
           }
 
           //群組有人
@@ -387,6 +383,7 @@ router.post("/message/group/:id", function(req, res, next) {
             msgRecipients.push({
               recipientId: null,
               recipientGroupId: chatUserXGroup.idno,
+              senderId: req.session.user.idno,
               messageId: msg.idno,
               isRead: 0
             });
@@ -394,15 +391,15 @@ router.post("/message/group/:id", function(req, res, next) {
           //儲存訊息紀錄
           db.ChatMessageRecipient.bulkCreate(msgRecipients)
             .then(function() {
-              res.sendStatus(201);
+              return res.sendStatus(201);
             })
             .error(error => {
-              res.sendStatus(500);
+              return res.sendStatus(500);
             });
         });
       })
       .error(error => {
-        res.sendStatus(500);
+        return res.sendStatus(500);
       });
   }
 });
@@ -423,10 +420,10 @@ router.post('/message-recipient', function (req, res, next) {
       isRead:DataTypes.INTEGER
     }).save()
     .then(() => {
-      res.sendStatus(200);
+      return res.sendStatus(200);
     })
     .error((error) => {
-      res.sendStatus(500);
+      return res.sendStatus(500);
     });
 
 
