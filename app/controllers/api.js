@@ -210,7 +210,6 @@ router.get("/message/user", function(req, res, next) {
     }
 
     if (req.query.before) {
-      console.log("entering before if");
       whereOption.createdAt["$lte"] = req.query.before; //$lte是 where CreatedAt <= ，要輸入的時間格式 2012-02-21T18:10:00
     }
   }

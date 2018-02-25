@@ -1,7 +1,7 @@
 var onlineUsers = {};
-setInterval(function() {
-  console.log("onlineUsers", onlineUsers);
-}, 5000);
+// setInterval(function() {
+// //   console.log("onlineUsers", onlineUsers);
+// }, 5000);
 var getOnline = function(userIdno, socketId) {
   onlineUsers[userIdno] = onlineUsers[userIdno] || [];
   onlineUsers[userIdno] = [...onlineUsers[userIdno], socketId];
@@ -17,20 +17,68 @@ module.exports = function(io) {
     console.log("a user connected");
     if (socket.request.session && socket.request.session.user) {
       var user = socket.request.session.user;
-      console.log("user", user);
       getOnline(user.idno, socket.id);
       //   console.log("onlineUsers", onlineUsers);
       socket.join(`user-${user.idno}`);
       socket.on("message", data => {
-        console.log("on message data = ", data);
         io.emit("message", {
           data,
           from: socket.request.session.user.username
         });
       });
 
-      socket.on("say to someone", function(idno, msg) {
-        socket.broadcast.to(`user-${idno}`).emit("my message", msg);
+      socket.on("toSomeone", function(idno, msg) {
+        const fromUserId = socket.request.session.user.idno;
+        if (!idno) {
+          return;
+        }
+
+        db.ChatUser.find({
+          where: {
+            idno: idno
+          }
+        })
+          .then(chatUser => {
+            //找不到使用者
+            if (chatUser == null) {
+              return;
+            }
+            return db.ChatMessage.build({
+              subject: null,
+              messageBody: msg,
+              creatorId: fromUserId,
+              parentMessageId: null,
+              expiryDate: null,
+              isActive: 1
+            }).save();
+          })
+          .then(msg => {
+            return Promise.all([
+              db.ChatMessageRecipient.build({
+                recipientId: idno,
+                recipientGroupId: null,
+                messageId: msg.idno,
+                isRead: 0
+              }).save(),
+              msg
+            ]);
+          })
+          .then(data => {
+            let ChatMessageRecipient = data[0].get({
+              plain: true
+            });
+            let ChatMessage = data[1].get({
+              plain: true
+            });
+            ChatMessageRecipient.ChatMessage = ChatMessage;
+
+            socket.broadcast
+              .to(`user-${idno}`)
+              .emit("my message", ChatMessageRecipient);
+          })
+          .error(error => {
+            console.error(error);
+          });
       });
 
       socket.on("disconnect", function() {
