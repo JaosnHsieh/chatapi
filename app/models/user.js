@@ -15,6 +15,14 @@ module.exports = function(sequelize, DataTypes) {
     {
       classMethods: {
         associate: function(models) {}
+      },
+      instanceMethods: {
+        toJSON: function() {
+          var values = Object.assign({}, this.get());
+
+          delete values.password;
+          return values;
+        }
       }
     }
   );
