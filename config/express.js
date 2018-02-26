@@ -79,8 +79,10 @@ module.exports = function(app, config, io) {
     );
     res.header("Access-Control-Allow-Headers", "content-Type,x-requested-with");
     res.header("Access-Control-Allow-Credentials", true);
-
-    next();
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(200);
+    }
+    return next();
   });
   ////CROS header end
 
@@ -103,7 +105,9 @@ module.exports = function(app, config, io) {
     if (req.session.user) {
       next();
     } else {
-      console.error(`NOT ALLOWED REQUEST ${req.baseUrl} FROM ${req.ip}`);
+      console.error(
+        `NOT ALLOWED REQUEST ${req.baseUrl} FROM ${req.ip} DUE TO NOT LOGINED!!`
+      );
       return res.sendStatus(500);
     }
   });

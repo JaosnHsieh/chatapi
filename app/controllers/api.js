@@ -119,8 +119,37 @@ router.post("/user", (req, res, next) => {
 //取得所有群組清單
 
 router.get("/group", function(req, res, next) {
-  db.ChatGroup.findAll()
+  db.ChatGroup.findAll({
+    where: {
+      isActive: 1
+    }
+  })
     .then(chatgroups => {
+      return res.json(chatgroups);
+    })
+    .error(error => {
+      return res.sendStatus(500);
+    });
+});
+
+router.get("/mygroup", function(req, res, next) {
+  db.ChatUserXgroup.findAll({
+    include: [
+      {
+        model: db.ChatGroup,
+        required: true
+      }
+    ],
+    where: {
+      userId: req.session.user.idno,
+      isActive: 1
+    }
+  })
+    .then(chatgroups => {
+      // format data
+      chatgroups = chatgroups.map(ele => {
+        return ele.ChatGroup;
+      });
       return res.json(chatgroups);
     })
     .error(error => {
@@ -132,13 +161,28 @@ router.get("/group", function(req, res, next) {
 
 //建立聊天群組
 router.post("/group", function(req, res, next) {
-  db.ChatGroup.build({
-    name: req.body.name,
-    isActive: 1
+  db.ChatGroup.findOne({
+    where: {
+      name: req.body.name,
+      isActive: 1
+    }
   })
-    .save()
-    .then(() => {
-      return res.sendStatus(201);
+    .then(group => {
+      if (group) {
+        return res.status(409).send("Duplicated Name");
+      }
+      db.ChatGroup.build({
+        name: req.body.name,
+        desc: req.body.desc,
+        isActive: 1
+      })
+        .save()
+        .then(() => {
+          return res.sendStatus(201);
+        })
+        .error(error => {
+          return res.sendStatus(500);
+        });
     })
     .error(error => {
       return res.sendStatus(500);
@@ -151,9 +195,11 @@ router.post("/group", function(req, res, next) {
 
 //加入群組
 router.post("/userxgroup", function(req, res, next) {
+  console.log("join group api", req.body);
   db.ChatGroup.find({
     where: {
-      idno: req.body.groupId
+      idno: req.body.groupId,
+      isActive: 1
     }
   }).then(chatGroup => {
     //如果群組不存在 就404 not found
@@ -164,27 +210,79 @@ router.post("/userxgroup", function(req, res, next) {
     db.ChatUserXgroup.find({
       where: {
         userId: req.session.user.idno,
-        groupId: req.body.groupId
+        groupId: req.body.groupId,
+        isActive: 1
       }
     }).then(userXGroup => {
       //如果有已經有一樣的userId和groupId就代表該使用者已經加入過群組 返回 409 conflict
-      if (userXGroup != null) {
-        return res.sendStatus(409);
+      if (userXGroup !== null) {
+        return res.status(409).send("ALREADY IN THE GROUP");
       }
 
       //建立加入群組的紀錄 insert ChatUserXgroup
       db.ChatUserXgroup.build({
         userId: req.session.user.idno,
         groupId: req.body.groupId,
-        isActive: req.body.isActive
+        isActive: 1
       })
         .save()
         .then(() => {
-          return res.sendStatus(201);
+          return res
+            .status(201)
+            .send(`JOIN THE GROUP ${req.body.groupId} SUCCESSFULLY`);
         })
         .error(error => {
           return res.sendStatus(500);
         });
+    });
+  });
+});
+
+//離開群組
+router.delete("/userxgroup/:groupId", function(req, res, next) {
+  var groupId = req.params.groupId;
+  db.ChatGroup.find({
+    where: {
+      idno: groupId
+    }
+  }).then(chatGroup => {
+    //如果群組不存在 就404 not found
+    if (chatGroup == null) {
+      return res.status(404).send("NOT FOUND GROUP");
+    }
+    db.ChatUserXgroup.findOne({
+      where: {
+        userId: req.session.user.idno,
+        groupId: groupId,
+        isActive: 1
+      }
+    }).then(userXGroup => {
+      if (userXGroup == null) {
+        return res.status(404).send("DID NOT JOINED THE GROUP");
+      }
+      userXGroup
+        .update({
+          isActive: 0
+        })
+        .then(updatedUserXGroup => {
+          return res.status(200).send("LEAVE GROUP SUCCESSFULLY");
+        })
+        .catch(err => {
+          return res.status(500).send("updated error");
+        });
+      // //建立加入群組的紀錄 insert ChatUserXgroup
+      // db.ChatUserXgroup.build({
+      //   userId: req.session.user.idno,
+      //   groupId: req.body.groupId,
+      //   isActive: req.body.isActive
+      // })
+      //   .save()
+      //   .then(() => {
+      //     return res.sendStatus(201);
+      //   })
+      //   .error(error => {
+      //     return res.sendStatus(500);
+      //   });
     });
   });
 });
