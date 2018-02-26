@@ -8,11 +8,19 @@ module.exports = function(sequelize, DataTypes) {
         autoIncrement: true
       },
       name: DataTypes.STRING,
+      desc: DataTypes.STRING,
       isActive: DataTypes.INTEGER
     },
     {
+      charset: "utf8",
+      collate: "utf8_general_ci",
       classMethods: {
-        associate: function(models) {}
+        associate: function(models) {
+          ChatGroup.hasMany(models.ChatUserXgroup, {
+            foreignKey: "groupId",
+            constraints: false
+          });
+        }
       }
     }
   );

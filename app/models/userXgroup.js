@@ -12,8 +12,19 @@ module.exports = function(sequelize, DataTypes) {
       isActive: DataTypes.INTEGER
     },
     {
+      charset: "utf8",
+      collate: "utf8_general_ci",
       classMethods: {
-        associate: function(models) {}
+        associate: function(models) {
+          ChatUserXgroup.belongsTo(models.ChatUser, {
+            foreignKey: "userId",
+            constraints: false
+          });
+          ChatUserXgroup.belongsTo(models.ChatGroup, {
+            foreignKey: "groupId",
+            constraints: false
+          });
+        }
       }
     }
   );

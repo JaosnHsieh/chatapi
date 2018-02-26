@@ -14,10 +14,13 @@ module.exports = function(sequelize, DataTypes) {
       isRead: DataTypes.INTEGER
     },
     {
+      charset: "utf8",
+      collate: "utf8_general_ci",
       classMethods: {
         associate: function(models) {
           ChatMessageRecipient.belongsTo(models.ChatMessage, {
-            foreignKey: "messageId"
+            foreignKey: "messageId",
+            constraints: false
           });
         }
       }

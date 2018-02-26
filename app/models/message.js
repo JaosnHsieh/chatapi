@@ -15,10 +15,13 @@ module.exports = function(sequelize, DataTypes) {
       isActive: DataTypes.INTEGER
     },
     {
+      charset: "utf8",
+      collate: "utf8_general_ci",
       classMethods: {
         associate: function(models) {
           ChatMessage.hasMany(models.ChatMessageRecipient, {
-            foreignKey: "idno"
+            foreignKey: "messageId",
+            constraints: false
           });
         }
       }

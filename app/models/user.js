@@ -13,8 +13,15 @@ module.exports = function(sequelize, DataTypes) {
       isActive: DataTypes.INTEGER
     },
     {
+      charset: "utf8",
+      collate: "utf8_general_ci",
       classMethods: {
-        associate: function(models) {}
+        associate: function(models) {
+          ChatUser.hasMany(models.ChatUserXgroup, {
+            foreignKey: "userId",
+            constraints: false
+          });
+        }
       },
       instanceMethods: {
         toJSON: function() {
