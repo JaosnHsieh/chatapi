@@ -177,11 +177,11 @@ router.post("/group", function(req, res, next) {
         isActive: 1
       })
         .save()
-        .then(() => {
-          return res.sendStatus(201);
+        .then(chatGroup => {
+          return res.json(chatGroup);
         })
         .error(error => {
-          return res.sendStatus(500);
+          return res.status(500).send("CREATE GROUP FAILED");
         });
     })
     .error(error => {
@@ -226,10 +226,16 @@ router.post("/userxgroup", function(req, res, next) {
         isActive: 1
       })
         .save()
-        .then(() => {
-          return res
-            .status(201)
-            .send(`JOIN THE GROUP ${req.body.groupId} SUCCESSFULLY`);
+        .then(chatUserXgroup => {
+          db.ChatGroup.findOne({
+            where: { idno: chatUserXgroup.groupId }
+          })
+            .then(chatGroup => {
+              res.json(chatGroup);
+            })
+            .catch(err => {
+              return res.sendStatus(500);
+            });
         })
         .error(error => {
           return res.sendStatus(500);
@@ -265,7 +271,7 @@ router.delete("/userxgroup/:groupId", function(req, res, next) {
           isActive: 0
         })
         .then(updatedUserXGroup => {
-          return res.status(200).send("LEAVE GROUP SUCCESSFULLY");
+          return res.json(updatedUserXGroup);
         })
         .catch(err => {
           return res.status(500).send("updated error");
