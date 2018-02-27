@@ -5,6 +5,9 @@ var express = require("express"),
   config = require("./config/config"),
   db = require("./app/models");
 
+require("babel-register");
+require("babel-polyfill");
+
 var app = express();
 
 var http = require("http").Server(app);
