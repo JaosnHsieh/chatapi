@@ -276,19 +276,6 @@ router.delete("/userxgroup/:groupId", function(req, res, next) {
         .catch(err => {
           return res.status(500).send("updated error");
         });
-      // //建立加入群組的紀錄 insert ChatUserXgroup
-      // db.ChatUserXgroup.build({
-      //   userId: req.session.user.idno,
-      //   groupId: req.body.groupId,
-      //   isActive: req.body.isActive
-      // })
-      //   .save()
-      //   .then(() => {
-      //     return res.sendStatus(201);
-      //   })
-      //   .error(error => {
-      //     return res.sendStatus(500);
-      //   });
     });
   });
 });
@@ -330,7 +317,36 @@ router.get("/message/user", function(req, res, next) {
     where: whereOption
   })
     .then(chatMessageRecipients => {
-      return res.json(chatMessageRecipients);
+      chatMessageRecipients = chatMessageRecipients.map(ele =>
+        ele.get({ plain: true })
+      );
+      return res.json(formatMessages(chatMessageRecipients));
+
+      /**
+       * @desc convert chatMessageRecipients data Array to Object and sort put chatMessageRecipient.ChatMessage to Object[receipentId]
+       * @param Array chatMessageRecipientArray - chatMessageRecipients plain data query from sequelize
+       * @return Object - ChatMessage data object, properties are receipentId
+       */
+      function formatMessages(chatMessageRecipientArray) {
+        const currentUser = req.session.user;
+        return chatMessageRecipientArray.reduce((result, ele) => {
+          const { senderId, recipientId } = ele;
+          if (senderId === currentUser.idno) {
+            return {
+              ...result,
+              [recipientId]: result[`${recipientId}`]
+                ? [...result[recipientId], ele.ChatMessage]
+                : [ele.ChatMessage]
+            };
+          }
+          return {
+            ...result,
+            [senderId]: result[`${senderId}`]
+              ? [...result[senderId], ele.ChatMessage]
+              : [ele.ChatMessage]
+          };
+        }, {});
+      }
     })
     .error(error => {
       console.log(error);
