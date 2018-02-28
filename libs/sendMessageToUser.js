@@ -20,7 +20,7 @@ const sendMessageToUser = async (idno, msg, fromUserId, db, socket) => {
   let savedchatMessageRecipient = await db.ChatMessageRecipient.build({
     recipientId: idno,
     senderId: fromUserId,
-    groupId: null,
+    recipientGroupId: null,
     messageId: savedMessage.idno,
     isRead: 0
   }).save();

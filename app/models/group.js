@@ -17,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
       classMethods: {
         associate: function(models) {
           ChatGroup.hasMany(models.ChatUserXgroup, {
-            foreignKey: "groupId",
+            foreignKey: "recipientGroupId",
             constraints: false
           });
         }

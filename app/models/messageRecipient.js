@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       recipientId: DataTypes.INTEGER,
       senderId: DataTypes.INTEGER,
-      groupId: DataTypes.INTEGER,
+      recipientGroupId: DataTypes.INTEGER,
       messageId: DataTypes.INTEGER,
       isRead: DataTypes.INTEGER
     },
