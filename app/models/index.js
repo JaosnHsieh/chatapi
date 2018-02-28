@@ -3,7 +3,7 @@ var fs = require("fs"),
   Sequelize = require("sequelize"),
   dbConfig = require("../../config/config").db,
   moment = require("moment");
-db = {};
+let db = {};
 let { database, username, password, options } = dbConfig;
 var sequelize = new Sequelize(database, username, password, options);
 

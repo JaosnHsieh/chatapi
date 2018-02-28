@@ -12,7 +12,7 @@ var getOffline = function(userIdno, socketId) {
     delete onlineUsers[userIdno];
   }
 };
-module.exports = function(io) {
+module.exports = function(io, db) {
   io.on("connection", function(socket) {
     console.log("a user connected");
     if (socket.request.session && socket.request.session.user) {

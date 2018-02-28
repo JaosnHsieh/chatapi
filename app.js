@@ -13,7 +13,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var configSocketIo = require("./config/socketio.js");
-configSocketIo(io);
+configSocketIo(io, db);
 
 module.exports = require("./config/express")(app, config, io);
 
