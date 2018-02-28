@@ -20,66 +20,50 @@ module.exports = function(io, db) {
       getOnline(user.idno, socket.id);
       //   console.log("onlineUsers", onlineUsers);
       socket.join(`user-${user.idno}`);
-      socket.on("message", data => {
-        io.emit("message", {
-          data,
-          from: socket.request.session.user.username
-        });
-      });
+      // socket.on("message", ({type,idno,msg}) => {
+      //   io.emit("message", {
+      //     data,
+      //     from: socket.request.session.user.username
+      //   });
+      // });
 
-      socket.on("toSomeone", function(idno, msg) {
+      socket.on("message", async function({ type, idno, msg }) {
         const fromUserId = socket.request.session.user.idno;
         if (!idno) {
           return;
         }
-
-        db.ChatUser.find({
+        let chatUser = await db.ChatUser.find({
           where: {
             idno: idno
           }
-        })
-          .then(chatUser => {
-            //找不到使用者
-            if (chatUser == null) {
-              return;
-            }
-            return db.ChatMessage.build({
-              subject: null,
-              messageBody: msg,
-              creatorId: fromUserId,
-              parentMessageId: null,
-              expiryDate: null,
-              isActive: 1
-            }).save();
-          })
-          .then(msg => {
-            return Promise.all([
-              db.ChatMessageRecipient.build({
-                recipientId: idno,
-                senderId: fromUserId,
-                recipientGroupId: null,
-                messageId: msg.idno,
-                isRead: 0
-              }).save(),
-              msg
-            ]);
-          })
-          .then(data => {
-            let ChatMessageRecipient = data[0].get({
-              plain: true
-            });
-            let ChatMessage = data[1].get({
-              plain: true
-            });
-            ChatMessageRecipient.ChatMessage = ChatMessage;
+        });
+        if (!chatUser) return; //找不到使用者
 
-            socket.broadcast
-              .to(`user-${idno}`)
-              .emit("my message", ChatMessageRecipient);
-          })
-          .error(error => {
-            console.error(error);
-          });
+        let savedMessage = await db.ChatMessage.build({
+          subject: null,
+          messageBody: msg,
+          creatorId: fromUserId,
+          parentMessageId: null,
+          expiryDate: null,
+          isActive: 1
+        }).save();
+        savedMessage = savedMessage.get({
+          plain: true
+        });
+        let savedchatMessageRecipient = await db.ChatMessageRecipient.build({
+          recipientId: idno,
+          senderId: fromUserId,
+          groupId: null,
+          messageId: savedMessage.idno,
+          isRead: 0
+        }).save();
+        savedchatMessageRecipient = savedchatMessageRecipient.get({
+          plain: true
+        });
+        savedchatMessageRecipient.ChatMessage = savedMessage;
+        socket.broadcast
+          .to(`user-${idno}`)
+          .emit("my message", savedchatMessageRecipient);
       });
 
       socket.on("disconnect", function() {
@@ -89,6 +73,7 @@ module.exports = function(io, db) {
     } else {
       socket.disconnect(true);
     }
+
     // socket.on("test", msg => {
     //   console.log("msg", msg);
     //   console.log("socket.request.session", socket.request.session);
