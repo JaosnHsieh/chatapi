@@ -1,3 +1,4 @@
+import sendMessageToUser from "../libs/sendMessageToUser";
 var onlineUsers = {};
 // setInterval(function() {
 // //   console.log("onlineUsers", onlineUsers);
@@ -12,71 +13,52 @@ var getOffline = function(userIdno, socketId) {
     delete onlineUsers[userIdno];
   }
 };
-module.exports = function(io, db) {
-  io.on("connection", function(socket) {
-    console.log("a user connected");
-    if (socket.request.session && socket.request.session.user) {
-      var user = socket.request.session.user;
-      getOnline(user.idno, socket.id);
-      //   console.log("onlineUsers", onlineUsers);
-      socket.join(`user-${user.idno}`);
-      // socket.on("message", ({type,idno,msg}) => {
-      //   io.emit("message", {
-      //     data,
-      //     from: socket.request.session.user.username
-      //   });
-      // });
+module.exports = async (io, db) => {
+  try {
+    io.on("connection", async socket => {
+      console.log("a user connected");
+      if (socket.request.session && socket.request.session.user) {
+        var user = socket.request.session.user;
+        getOnline(user.idno, socket.id);
 
-      socket.on("message", async function({ type, idno, msg }) {
-        const fromUserId = socket.request.session.user.idno;
-        if (!idno) {
-          return;
-        }
-        let chatUser = await db.ChatUser.find({
-          where: {
-            idno: idno
+        //join user's own chanel
+        socket.join(`user-${user.idno}`);
+
+        //join channel
+        socket.on(`join-channels`, groupIds => {
+          if (groupIds && Array.isArray(groupIds)) {
+            groupIds.forEach(groupId => {
+              socket.join(`group-${groupId}`);
+            });
           }
         });
-        if (!chatUser) return; //找不到使用者
 
-        let savedMessage = await db.ChatMessage.build({
-          subject: null,
-          messageBody: msg,
-          creatorId: fromUserId,
-          parentMessageId: null,
-          expiryDate: null,
-          isActive: 1
-        }).save();
-        savedMessage = savedMessage.get({
-          plain: true
+        //
+        socket.on("message", async ({ type, idno, msg }) => {
+          if (!idno || !msg) {
+            return;
+          }
+          const fromUserId = socket.request.session.user.idno;
+          if (type === "user") {
+            sendMessageToUser(idno, msg, fromUserId, db, socket);
+          } else if ((type = "group")) {
+            sendMessageToGroup(idno, msg, fromUserId, db, socket);
+          }
         });
-        let savedchatMessageRecipient = await db.ChatMessageRecipient.build({
-          recipientId: idno,
-          senderId: fromUserId,
-          groupId: null,
-          messageId: savedMessage.idno,
-          isRead: 0
-        }).save();
-        savedchatMessageRecipient = savedchatMessageRecipient.get({
-          plain: true
+
+        socket.on("disconnect", function() {
+          console.log("user disconnected");
+          getOffline(user.idno, socket.id);
         });
-        savedchatMessageRecipient.ChatMessage = savedMessage;
-        socket.broadcast
-          .to(`user-${idno}`)
-          .emit("my message", savedchatMessageRecipient);
-      });
-
-      socket.on("disconnect", function() {
-        console.log("user disconnected");
-        getOffline(user.idno, socket.id);
-      });
-    } else {
-      socket.disconnect(true);
-    }
-
-    // socket.on("test", msg => {
-    //   console.log("msg", msg);
-    //   console.log("socket.request.session", socket.request.session);
-    // });
-  });
+      } else {
+        socket.disconnect(true);
+      }
+      // socket.on("test", msg => {
+      //   console.log("msg", msg);
+      //   console.log("socket.request.session", socket.request.session);
+      // });
+    });
+  } catch (err) {
+    return console.log("socketio error", error);
+  }
 };

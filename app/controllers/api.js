@@ -1,3 +1,4 @@
+import convertChatMessageRecipientsToChatMessages from "../../libs/convertChatMessageRecipientsToChatMessages";
 var express = require("express"),
   router = express.Router(),
   db = require("../models");
@@ -319,33 +320,12 @@ router.get("/message/user", function(req, res, next) {
       chatMessageRecipients = chatMessageRecipients.map(ele =>
         ele.get({ plain: true })
       );
-      return res.json(formatMessages(chatMessageRecipients));
-
-      /**
-       * @desc convert chatMessageRecipients data Array to Object and sort put chatMessageRecipient.ChatMessage to Object[receipentId]
-       * @param Array chatMessageRecipientArray - chatMessageRecipients plain data query from sequelize
-       * @return Object - ChatMessage data object, properties are receipentId
-       */
-      function formatMessages(chatMessageRecipientArray) {
-        const currentUser = req.session.user;
-        return chatMessageRecipientArray.reduce((result, ele) => {
-          const { senderId, recipientId } = ele;
-          if (senderId === currentUser.idno) {
-            return {
-              ...result,
-              [recipientId]: result[`${recipientId}`]
-                ? [...result[recipientId], ele.ChatMessage]
-                : [ele.ChatMessage]
-            };
-          }
-          return {
-            ...result,
-            [senderId]: result[`${senderId}`]
-              ? [...result[senderId], ele.ChatMessage]
-              : [ele.ChatMessage]
-          };
-        }, {});
-      }
+      const currentUser = req.session.user;
+      const chatMessages = convertChatMessageRecipientsToChatMessages(
+        chatMessageRecipients,
+        currentUser
+      );
+      return res.json(chatMessages);
     })
     .error(error => {
       console.log(error);
@@ -354,7 +334,9 @@ router.get("/message/user", function(req, res, next) {
 });
 
 ////取得使用者收到的所有訊息 END
-
+router.get("/message/group", function(req, res, next) {
+  res.send("OK");
+});
 //取得群組內的訊息
 
 // router.get("/message/group/:id", function(req, res, next) {
