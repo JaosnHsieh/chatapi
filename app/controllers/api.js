@@ -132,29 +132,28 @@ router.get("/group", function(req, res, next) {
     });
 });
 
-router.get("/mygroup", function(req, res, next) {
-  db.ChatUserXgroup.findAll({
-    include: [
-      {
-        model: db.ChatGroup,
-        required: true
+router.get("/mygroup", async (req, res, next) => {
+  try {
+    let chatUserXgroups = await db.ChatUserXgroup.findAll({
+      include: [
+        {
+          model: db.ChatGroup,
+          required: true
+        }
+      ],
+      where: {
+        userId: req.session.user.idno,
+        isActive: 1
       }
-    ],
-    where: {
-      userId: req.session.user.idno,
-      isActive: 1
-    }
-  })
-    .then(chatgroups => {
-      // format data
-      chatgroups = chatgroups.map(ele => {
-        return ele.ChatGroup;
-      });
-      return res.json(chatgroups);
-    })
-    .error(error => {
-      return res.sendStatus(500);
     });
+
+    let chatgroups = chatUserXgroups.map(ele => {
+      return ele.ChatGroup;
+    });
+    return res.json(chatgroups);
+  } catch (err) {
+    return res.sendStatus(500);
+  }
 });
 
 //取得所有群組清單 END
@@ -358,64 +357,64 @@ router.get("/message/user", function(req, res, next) {
 
 //取得群組內的訊息
 
-router.get("/message/group/:id", function(req, res, next) {
-  if (!req.params.id) {
-    return res.sendStatus(500);
-  }
+// router.get("/message/group/:id", function(req, res, next) {
+//   if (!req.params.id) {
+//     return res.sendStatus(500);
+//   }
 
-  //確認使用者在群組中
-  db.ChatUserXgroup.find({
-    where: {
-      groupId: req.params.id,
-      userId: req.session.user.idno
-    }
-  })
-    .then(chatUserXgroup => {
-      //使用者不在群組中 403 Forbidden
-      if (chatUserXgroup == null) {
-        return res.sendStatus(403);
-      }
+//   //確認使用者在群組中
+//   db.ChatUserXgroup.find({
+//     where: {
+//       groupId: req.params.id,
+//       userId: req.session.user.idno
+//     }
+//   })
+//     .then(chatUserXgroup => {
+//       //使用者不在群組中 403 Forbidden
+//       if (chatUserXgroup == null) {
+//         return res.sendStatus(403);
+//       }
 
-      //加上時間before after 條件
-      var whereOption = {
-        recipientGroupId: chatUserXgroup.idno
-      };
-      if (req.query.after || req.query.before) {
-        whereOption.createdAt = {};
-        if (req.query.after) {
-          whereOption.createdAt["$gt"] = req.query.after; //$gt是 where CreatedAt >  ，要輸入的時間格式 2012-02-21T18:10:00
-        }
+//       //加上時間before after 條件
+//       var whereOption = {
+//         groupId: chatUserXgroup.idno
+//       };
+//       if (req.query.after || req.query.before) {
+//         whereOption.createdAt = {};
+//         if (req.query.after) {
+//           whereOption.createdAt["$gt"] = req.query.after; //$gt是 where CreatedAt >  ，要輸入的時間格式 2012-02-21T18:10:00
+//         }
 
-        if (req.query.before) {
-          console.log("entering before if");
-          whereOption.createdAt["$lte"] = req.query.before; //$lte是 where CreatedAt <= ，要輸入的時間格式 2012-02-21T18:10:00
-        }
-      }
-      //加上時間before after 條件 END
+//         if (req.query.before) {
+//           console.log("entering before if");
+//           whereOption.createdAt["$lte"] = req.query.before; //$lte是 where CreatedAt <= ，要輸入的時間格式 2012-02-21T18:10:00
+//         }
+//       }
+//       //加上時間before after 條件 END
 
-      //使用者在群組中 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
-      db.ChatMessageRecipient.findAll({
-        include: [
-          {
-            model: db.ChatMessage,
-            required: true
-          }
-        ],
-        where: whereOption
-      })
-        .then(chatMessageRecipients => {
-          return res.json(chatMessageRecipients);
-        })
-        .error(error => {
-          return res.sendStatus(500);
-        });
-    })
-    .error(error => {
-      return res.sendStatus(500);
-    });
-});
+//       //使用者在群組中 就找出 MessageRecipient inner join ChatMessage 然後 傳回訊息
+//       db.ChatMessageRecipient.findAll({
+//         include: [
+//           {
+//             model: db.ChatMessage,
+//             required: true
+//           }
+//         ],
+//         where: whereOption
+//       })
+//         .then(chatMessageRecipients => {
+//           return res.json(chatMessageRecipients);
+//         })
+//         .error(error => {
+//           return res.sendStatus(500);
+//         });
+//     })
+//     .error(error => {
+//       return res.sendStatus(500);
+//     });
+// });
 
-//取得群組內的訊息 END
+// //取得群組內的訊息 END
 
 //傳送訊息至個人
 router.post("/message/user/:id", function(req, res, next) {
@@ -447,7 +446,7 @@ router.post("/message/user/:id", function(req, res, next) {
           db.ChatMessageRecipient.build({
             recipientId: req.params.id,
             senderId: req.session.user.idno,
-            recipientGroupId: null,
+            groupId: null,
             messageId: msg.idno,
             isRead: 0
           })
@@ -470,59 +469,62 @@ router.post("/message/user/:id", function(req, res, next) {
 //傳送訊息至個人 END
 
 //傳送訊息至群組
-router.post("/message/group/:id", function(req, res, next) {
-  if (!req.params.id) {
-    return res.sendStatus(500);
-  } else {
-    //建立訊息
-    db.ChatMessage.build({
-      subject: req.body.subject,
-      messageBody: req.body.messageBody,
-      creatorId: req.session.user.idno,
-      parentMessageId: req.body.parentMessageId,
-      expiryDate: null,
-      isActive: req.body.isActive
-    })
-      .save()
-      .then(msg => {
-        //找出群組內有幾個USER及這些USER的idno
-        db.ChatUserXgroup.findAll({
-          where: {
-            groupId: req.params.id
-          }
-        }).then(chatUserXGroups => {
-          //如果群組內沒人
-          if (chatUserXGroups.length == 0) {
-            return res.sendStatus(404);
-          }
+// router.post("/message/group/:id", function(req, res, next) {});
+//傳送訊息至群組 END
+// //傳送訊息至群組 2018.02.28 實做群組聊天時覺得原設計太麻煩 改了schema 所以下面這段用不到了
+// router.post("/message/group/:id", function(req, res, next) {
+//   if (!req.params.id) {
+//     return res.sendStatus(500);
+//   } else {
+//     //建立訊息
+//     db.ChatMessage.build({
+//       subject: req.body.subject,
+//       messageBody: req.body.messageBody,
+//       creatorId: req.session.user.idno,
+//       parentMessageId: req.body.parentMessageId,
+//       expiryDate: null,
+//       isActive: req.body.isActive
+//     })
+//       .save()
+//       .then(msg => {
+//         //找出群組內有幾個USER及這些USER的idno
+//         db.ChatUserXgroup.findAll({
+//           where: {
+//             groupId: req.params.id
+//           }
+//         }).then(chatUserXGroups => {
+//           //如果群組內沒人
+//           if (chatUserXGroups.length == 0) {
+//             return res.sendStatus(404);
+//           }
 
-          //群組有人
-          //建立群組每個人的訊息紀錄
-          let msgRecipients = [];
-          chatUserXGroups.forEach(chatUserXGroup => {
-            msgRecipients.push({
-              recipientId: null,
-              recipientGroupId: chatUserXGroup.idno,
-              senderId: req.session.user.idno,
-              messageId: msg.idno,
-              isRead: 0
-            });
-          });
-          //儲存訊息紀錄
-          db.ChatMessageRecipient.bulkCreate(msgRecipients)
-            .then(function() {
-              return res.sendStatus(201);
-            })
-            .error(error => {
-              return res.sendStatus(500);
-            });
-        });
-      })
-      .error(error => {
-        return res.sendStatus(500);
-      });
-  }
-});
+//           //群組有人
+//           //建立群組每個人的訊息紀錄
+//           let msgRecipients = [];
+//           chatUserXGroups.forEach(chatUserXGroup => {
+//             msgRecipients.push({
+//               recipientId: null,
+//               groupId: chatUserXGroup.idno,
+//               senderId: req.session.user.idno,
+//               messageId: msg.idno,
+//               isRead: 0
+//             });
+//           });
+//           //儲存訊息紀錄
+//           db.ChatMessageRecipient.bulkCreate(msgRecipients)
+//             .then(function() {
+//               return res.sendStatus(201);
+//             })
+//             .error(error => {
+//               return res.sendStatus(500);
+//             });
+//         });
+//       })
+//       .error(error => {
+//         return res.sendStatus(500);
+//       });
+//   }
+// });
 
 //傳送訊息至群組 END
 
@@ -535,7 +537,7 @@ router.post('/message-recipient', function (req, res, next) {
 
   db.MessageRecipient.build({
       recipientId: DataTypes.INTEGER,
-      recipientGroupId: DataTypes.INTEGER,
+      groupId: DataTypes.INTEGER,
       messageId: DataTypes.INTEGER,
       isRead:DataTypes.INTEGER
     }).save()
