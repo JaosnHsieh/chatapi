@@ -3,10 +3,7 @@
  * @param Array chatMessageRecipientArray - chatMessageRecipients plain data query from sequelize
  * @return Object - ChatMessage data object, properties are receipentId
  */
-const convertChatMessageRecipientsToChatMessages = (
-  chatMessageRecipientArray,
-  currentUser
-) => {
+const formatMessagesForUser = (chatMessageRecipientArray, currentUser) => {
   return chatMessageRecipientArray.reduce((result, ele) => {
     const { senderId, recipientId } = ele;
     if (senderId === currentUser.idno) {
@@ -25,4 +22,4 @@ const convertChatMessageRecipientsToChatMessages = (
     };
   }, {});
 };
-export default convertChatMessageRecipientsToChatMessages;
+export default formatMessagesForUser;

@@ -21,6 +21,7 @@ const sendMessageToUser = async (idno, msg, fromUserId, db, socket) => {
     recipientId: idno,
     senderId: fromUserId,
     recipientGroupId: null,
+    groupId: null,
     messageId: savedMessage.idno,
     isRead: 0
   }).save();
@@ -30,7 +31,7 @@ const sendMessageToUser = async (idno, msg, fromUserId, db, socket) => {
   savedchatMessageRecipient.ChatMessage = savedMessage;
   socket.broadcast
     .to(`user-${idno}`)
-    .emit("my message", savedchatMessageRecipient);
+    .emit("my message", { msg: savedchatMessageRecipient, chatType: "user" });
 };
 
 export default sendMessageToUser;

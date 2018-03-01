@@ -1,4 +1,5 @@
 import sendMessageToUser from "../libs/sendMessageToUser";
+import sendMessageToGroup from "../libs/sendMessageToGroup";
 var onlineUsers = {};
 // setInterval(function() {
 // //   console.log("onlineUsers", onlineUsers);
@@ -34,14 +35,15 @@ module.exports = async (io, db) => {
         });
 
         //
-        socket.on("message", async ({ type, idno, msg }) => {
+        socket.on("message", async ({ chatType, idno, msg }) => {
           if (!idno || !msg) {
             return;
           }
+          idno = idno = parseInt(idno, 10);
           const fromUserId = socket.request.session.user.idno;
-          if (type === "user") {
+          if (chatType === "user") {
             sendMessageToUser(idno, msg, fromUserId, db, socket);
-          } else if ((type = "group")) {
+          } else if ((chatType = "group")) {
             sendMessageToGroup(idno, msg, fromUserId, db, socket);
           }
         });

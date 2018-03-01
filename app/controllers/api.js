@@ -1,4 +1,4 @@
-import convertChatMessageRecipientsToChatMessages from "../../libs/convertChatMessageRecipientsToChatMessages";
+import formatMessagesForUser from "../../libs/formatMessagesForUser";
 var express = require("express"),
   router = express.Router(),
   db = require("../models");
@@ -321,7 +321,7 @@ router.get("/message/user", function(req, res, next) {
         ele.get({ plain: true })
       );
       const currentUser = req.session.user;
-      const chatMessages = convertChatMessageRecipientsToChatMessages(
+      const chatMessages = formatMessagesForUser(
         chatMessageRecipients,
         currentUser
       );
@@ -334,9 +334,49 @@ router.get("/message/user", function(req, res, next) {
 });
 
 ////取得使用者收到的所有訊息 END
-router.get("/message/group", function(req, res, next) {
-  res.send("OK");
+//取得登入使用者已加入的所有群組訊息
+router.get("/message/group", async (req, res, next) => {
+  // return res.json([]);
+  const currentUser = req.session.user;
+  let userXGroups = await db.ChatUserXgroup.findAll({
+    where: {
+      userId: currentUser.idno,
+      isActive: 1
+    }
+  });
+  let groupIdUserXGroupIdMap = userXGroups.reduce((result, ele) => {
+    return {
+      ...result,
+      [ele.idno]: ele.groupId
+    };
+  }, {});
+  let userXGroupsIds = userXGroups.map(userXGroup => userXGroup.idno);
+  let ChatMessageRecipients = await db.ChatMessageRecipient.findAll({
+    include: [
+      {
+        model: db.ChatMessage,
+        required: true
+      }
+    ],
+    where: {
+      recipientId: currentUser.idno,
+      recipientGroupId: { $in: userXGroupsIds }
+    }
+  });
+
+  //整理成 map 方便前端使用
+  let chatMessagesObject = ChatMessageRecipients.reduce((result, ele) => {
+    const groupId = groupIdUserXGroupIdMap[ele.recipientGroupId];
+    return {
+      ...result,
+      [groupId]: result[`${groupId}`]
+        ? [...result[groupId], ele.ChatMessage]
+        : [ele.ChatMessage]
+    };
+  }, {});
+  return res.json(chatMessagesObject);
 });
+//取得登入使用者已加入的所有群組訊息 END
 //取得群組內的訊息
 
 // router.get("/message/group/:id", function(req, res, next) {
