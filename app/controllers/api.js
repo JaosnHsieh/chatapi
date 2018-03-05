@@ -289,6 +289,7 @@ router.delete("/userxgroup/:groupId", function(req, res, next) {
 router.get("/message/user", function(req, res, next) {
   //加上時間before after 條件
   var whereOption = {
+    groupId: null,
     $or: [
       { recipientId: req.session.user.idno },
       { senderId: req.session.user.idno }
