@@ -1,6 +1,6 @@
 var express = require('express');
 var glob = require('glob');
-
+var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
@@ -24,8 +24,32 @@ module.exports = function (app, config) {
   app.set('views', config.root + '/app/views');
   app.set('view engine', 'handlebars');
 
-  // app.use(favicon(config.root + '/public/img/favicon.ico'));
-  app.use(logger('dev'));
+//存取記錄
+  
+
+  // Logging Starts here
+var FileStreamRotator = require('file-stream-rotator')
+var fs = require('fs')
+var logDirectory = path.join(global.appRoot,'log')
+// 目錄未建立就建立
+fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory) 
+// 檔案名稱、日期格式及記錄週期設定
+var accessLogStream = FileStreamRotator.getStream({
+  date_format: 'YYYYMMDD', 
+  filename: logDirectory + '/access-%DATE%.log',
+  frequency: '30d' //記錄週期區間30天
+});
+
+  
+// 搭配file-stream-rotator寫入文件 combined是比較詳細的request記錄 是morgan的設定
+app.use(logger('combined', {stream: accessLogStream}))
+//簡單的request 記錄輸出到console
+app.use(logger('dev'));
+
+
+
+//存取紀錄 END
+
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({
     extended: true
