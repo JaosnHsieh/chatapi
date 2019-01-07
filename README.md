@@ -31,13 +31,25 @@ npm start
 ### Run web app and api server with docker-compose
 
 `git clone https://github.com/JaosnHsieh/j-chat-web.git`
+
 `cd ./j-chat-web`
+
 `docker build -t j-chat-web:dev --target dev .`
+
+`cd ..`
+
 `git clone https://github.com/JaosnHsieh/chatapi.git`
+
 `cd ./chatapi`
+
 `docker build -t chatapi:dev --target dev .`
 
 replace your local machine ip by
 
 `vim ./.env`
+
 `docker-compose up -d`
+
+check web app on 
+
+`http://localhost:3031`
