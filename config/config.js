@@ -10,12 +10,12 @@ var config = {
     },
     port: process.env.PORT || 3000,
     db: {
-      database: "chat-api-develop",
-      username: "root",
-      password: "00000000",
+      database: process.env.DB_NAME || "chat-api-develop",
+      username: process.env.DB_USERNAME || "root",
+      password: process.env.DB_PASSWORD || "00000000",
       options: {
-        host: 'localhost',
-        dialect: 'mysql',
+        host: process.env.DB_HOSTNAME || "localhost",
+        dialect: "mysql",
 
         pool: {
           max: 5,
