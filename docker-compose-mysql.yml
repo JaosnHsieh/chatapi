@@ -1,0 +1,42 @@
+# Use root/example as user/password credentials
+version: "3.3"
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - /db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: chat-api
+      MYSQL_USER: chat-api
+      MYSQL_PASSWORD: chat-api
+    ports:
+      - "3306:3306"
+
+  chatapi:
+    image: chatapi:dev
+    restart: always
+    environment:
+      NODE_ENV: development
+      DB_HOSTNAME: ${localip}
+      DB_NAME: chat-api
+      DB_USERNAME: root
+      DB_PASSWORD: rootpass
+      PORT: 3030
+    ports:
+      - 3030:3030
+    command: npm start
+
+  j-chat-web:
+    image: j-chat-web:dev
+    restart: always
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      REACT_APP_API_URL: http://${localip}:3030/api/
+      REACT_APP_WS_URL: ${localip}:3030
+    ports:
+      - 3001:3001
+    command: npm start

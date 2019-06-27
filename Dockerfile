@@ -1,6 +1,8 @@
-FROM node:8.11.4-alpine AS dev
-WORKDIR /usr/src/app
-ENV NODE_ENV development
+FROM node:8.10.0-alpine
+RUN mkdir /app
+WORKDIR "/app"
 COPY . .
-# You could use `yarn install` if you prefer.
-RUN npm install
+RUN yarn global add pm2
+RUN yarn
+RUN yarn run build
+CMD ["pm2-runtime","start","./dist/app.js"]

@@ -1,6 +1,40 @@
 var path = require('path'),
   rootPath = path.normalize(__dirname + '/..'),
-  env = process.env.NODE_ENV || 'development';
+  env = process.env.NODE_ENV || 'development',
+  isUseSqlite = process.env.IS_USE_SQLITE === 'true';
+
+const sqlLiteDbConfig = {
+  database: '',
+  username: '',
+  password: '',
+  options: {
+    dialect: 'sqlite',
+    pool: {
+      max: 5,
+      min: 0,
+      idle: 10000,
+    },
+    storage: path.join(__dirname, '..', 'chatapi.sqlite'),
+  },
+};
+
+const mysqlDbConfig = {
+  database: process.env.DB_NAME || 'chat-api-develop',
+  username: process.env.DB_USERNAME || 'root',
+  password: process.env.DB_PASSWORD || '00000000',
+  options: {
+    host: process.env.DB_HOSTNAME || 'localhost',
+    dialect: 'mysql',
+
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+    operatorsAliases: false,
+  },
+};
 
 var config = {
   development: {
@@ -10,21 +44,7 @@ var config = {
     },
     port: process.env.PORT || 3000,
     db: {
-      database: process.env.DB_NAME || 'chat-api-develop',
-      username: process.env.DB_USERNAME || 'root',
-      password: process.env.DB_PASSWORD || '00000000',
-      options: {
-        host: process.env.DB_HOSTNAME || 'localhost',
-        dialect: 'mysql',
-
-        pool: {
-          max: 5,
-          min: 0,
-          acquire: 30000,
-          idle: 10000,
-        },
-        operatorsAliases: false,
-      },
+      ...(isUseSqlite ? sqlLiteDbConfig : mysqlDbConfig),
     },
   },
   production: {
@@ -34,41 +54,9 @@ var config = {
     },
     port: process.env.PORT || 3000,
     db: {
-      database: process.env.DB_NAME || 'chat-api-develop',
-      username: process.env.DB_USERNAME || 'root',
-      password: process.env.DB_PASSWORD || '00000000',
-      options: {
-        host: process.env.DB_HOSTNAME || 'localhost',
-        dialect: 'mysql',
-
-        pool: {
-          max: 5,
-          min: 0,
-          acquire: 30000,
-          idle: 10000,
-        },
-        operatorsAliases: false,
-      },
+      ...(isUseSqlite ? sqlLiteDbConfig : mysqlDbConfig),
     },
   },
-
-  // test: {
-  //   root: rootPath,
-  //   app: {
-  //     name: "chat-api"
-  //   },
-  //   port: process.env.PORT || 3000,
-  //   db: "mysql://localhost/chat-api-test"
-  // },
-
-  // production: {
-  //   root: rootPath,
-  //   app: {
-  //     name: "chat-api"
-  //   },
-  //   port: process.env.PORT || 3000,
-  //   db: "mysql://localhost/chat-api-production"
-  // }
 };
 
 module.exports = config[env];
