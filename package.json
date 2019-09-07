@@ -1,6 +1,9 @@
 {
   "name": "chat-api",
   "version": "0.0.1",
+  "engines": {
+    "node": "10.3.0"
+  },
   "private": true,
   "main": "app.js",
   "scripts": {
